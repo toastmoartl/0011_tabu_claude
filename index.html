@@ -6,17 +6,22 @@
 <title>Tabu</title>
 <style>
   :root {
-    --lowen: #F5A623;
-    --lowen-dark: #c7851a;
-    --adler: #2D6BE4;
-    --adler-dark: #1f4faa;
-    --bg: #1a1a2e;
-    --card-bg: #16213e;
-    --card-border: #0f3460;
-    --text: #e0e0e0;
-    --text-dim: #888;
-    --forbidden: #e74c3c;
-    --green: #27ae60;
+    --lowen: #d4a843;
+    --lowen-muted: rgba(212,168,67,0.18);
+    --lowen-border: rgba(212,168,67,0.35);
+    --adler: #8b7ff0;
+    --adler-muted: rgba(139,127,240,0.18);
+    --adler-border: rgba(139,127,240,0.35);
+    --bg: #0c0c10;
+    --surface: #141418;
+    --surface2: #1c1c22;
+    --border: rgba(255,255,255,0.07);
+    --card-bg: #f0e9da;
+    --card-ink: #1a1714;
+    --card-dim: rgba(26,23,20,0.4);
+    --text: #ddd8cf;
+    --text-dim: #5a5760;
+    --forbidden: #c0392b;
     --radius: 18px;
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -36,7 +41,33 @@
     overflow: hidden;
     background: var(--bg);
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  /* Grain overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.028;
+    pointer-events: none;
+    z-index: 999;
+    animation: grain 8s steps(10) infinite;
+  }
+  @keyframes grain {
+    0%,100%{transform:translate(0,0)}
+    10%{transform:translate(-2%,-3%)}
+    20%{transform:translate(3%,2%)}
+    30%{transform:translate(-1%,4%)}
+    40%{transform:translate(4%,-1%)}
+    50%{transform:translate(-3%,3%)}
+    60%{transform:translate(2%,-4%)}
+    70%{transform:translate(-4%,1%)}
+    80%{transform:translate(3%,-2%)}
+    90%{transform:translate(-2%,4%)}
   }
 
   /* ── SCREEN SYSTEM ── */
@@ -45,37 +76,66 @@
     inset: 0;
     display: flex;
     flex-direction: column;
-    padding: calc(var(--safe-top) + 16px) 20px calc(var(--safe-bottom) + 16px);
+    padding: calc(var(--safe-top) + 20px) 20px calc(var(--safe-bottom) + 20px);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.3s ease;
+    z-index: 1;
   }
   .screen.active {
     opacity: 1;
     pointer-events: all;
   }
 
-  /* ── HOME SCREEN ── */
+  /* ══════════════════════════════
+     HOME
+  ══════════════════════════════ */
   #screen-home {
     justify-content: center;
-    gap: 24px;
+    gap: 16px;
+  }
+
+  .home-header {
+    text-align: center;
+    margin-bottom: 4px;
   }
   .home-title {
-    text-align: center;
-    font-size: 3rem;
-    font-weight: 800;
-    letter-spacing: 4px;
+    font-size: 4rem;
+    font-weight: 900;
+    letter-spacing: 14px;
+    color: var(--text);
+    font-family: Georgia, serif;
+  }
+  .home-rule {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 6px auto 0;
+    width: 120px;
+  }
+  .home-rule::before,
+  .home-rule::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .home-rule-dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
     background: linear-gradient(135deg, var(--lowen), var(--adler));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 8px;
+  }
+
+  .teams-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 18px 16px;
   }
   .teams-row {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 12px;
+    gap: 8px;
   }
   .team-block {
     flex: 1;
@@ -87,269 +147,339 @@
   .team-name-input {
     background: transparent;
     border: none;
-    border-bottom: 2px solid var(--text-dim);
+    border-bottom: 2px solid transparent;
     color: var(--text);
-    font-size: 1.3rem;
-    font-weight: 700;
+    font-size: 1.15rem;
+    font-weight: 800;
     text-align: center;
     width: 100%;
-    padding: 4px 0;
+    padding: 3px 0;
     outline: none;
-  }
-  .team-name-input:focus {
-    border-bottom-color: var(--text);
   }
   #team0-name-input { border-bottom-color: var(--lowen); color: var(--lowen); }
   #team1-name-input { border-bottom-color: var(--adler); color: var(--adler); }
   .score-display {
-    font-size: 2rem;
-    font-weight: 800;
+    font-size: 2.8rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -1px;
   }
   .score-sep {
     font-size: 1.4rem;
-    color: var(--text-dim);
-    padding-top: 8px;
+    color: var(--border);
+    padding-bottom: 24px;
+    flex-shrink: 0;
   }
-  .setting-row {
+
+  .setting-row, .cards-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 13px 16px;
   }
-  .setting-label {
-    font-size: 0.95rem;
+  .setting-label, .cards-label {
+    font-size: 0.82rem;
     color: var(--text-dim);
+    letter-spacing: 0.2px;
   }
   .setting-input {
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--text-dim);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
     color: var(--text);
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
-    width: 60px;
+    width: 62px;
     text-align: center;
     outline: none;
+    padding: 4px 0;
   }
-  .cards-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    padding: 12px 16px;
-  }
-  .cards-label {
-    font-size: 0.95rem;
-    color: var(--text-dim);
-  }
-  #cards-available-count {
-    font-weight: 700;
-    color: var(--text);
-  }
+  #cards-available-count { font-weight: 700; color: var(--text); }
   .btn-reset-cards {
     background: transparent;
-    border: 1px solid var(--text-dim);
+    border: 1px solid var(--border);
     color: var(--text-dim);
     border-radius: 8px;
-    padding: 6px 12px;
-    font-size: 0.85rem;
+    padding: 5px 13px;
+    font-size: 0.78rem;
     cursor: pointer;
+    letter-spacing: 0.2px;
+    transition: border-color 0.15s, color 0.15s;
   }
-  .btn-reset-cards:active { opacity: 0.6; }
+  .btn-reset-cards:active { opacity: 0.5; }
 
   /* ── BUTTONS ── */
   .btn-primary {
-    background: linear-gradient(135deg, var(--lowen), var(--adler));
+    background: var(--text);
     border: none;
-    border-radius: var(--radius);
-    color: #fff;
-    font-size: 1.2rem;
-    font-weight: 700;
-    padding: 16px;
+    border-radius: 14px;
+    color: #0c0c10;
+    font-size: 0.82rem;
+    font-weight: 800;
+    padding: 17px;
     cursor: pointer;
     width: 100%;
-    letter-spacing: 1px;
-    transition: opacity 0.15s;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    transition: opacity 0.15s, transform 0.1s;
   }
-  .btn-primary:active { opacity: 0.8; }
-  .btn-secondary {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius);
-    color: var(--text);
-    font-size: 1rem;
-    font-weight: 600;
-    padding: 14px;
-    cursor: pointer;
-    width: 100%;
-    transition: opacity 0.15s;
-  }
-  .btn-secondary:active { opacity: 0.6; }
+  .btn-primary:active { opacity: 0.82; transform: scale(0.985); }
 
-  /* ── TURN INTRO SCREEN ── */
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 15px;
+    cursor: pointer;
+    width: 100%;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: opacity 0.15s;
+  }
+  .btn-secondary:active { opacity: 0.5; }
+
+  /* ══════════════════════════════
+     INTRO
+  ══════════════════════════════ */
   #screen-intro {
     justify-content: center;
     align-items: center;
     text-align: center;
-    gap: 32px;
+    gap: 0;
+    cursor: pointer;
   }
-  .intro-team-label {
-    font-size: 1rem;
+  .intro-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+  }
+  .intro-team-name {
+    font-size: clamp(3rem, 18vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -2px;
+    font-family: Georgia, serif;
+    margin-bottom: 10px;
+  }
+  .intro-sub {
+    font-size: 0.8rem;
     color: var(--text-dim);
     letter-spacing: 2px;
     text-transform: uppercase;
-  }
-  .intro-team-name {
-    font-size: 3rem;
-    font-weight: 800;
-  }
-  .intro-sub {
-    font-size: 1rem;
-    color: var(--text-dim);
-    margin-top: -20px;
+    margin-bottom: 40px;
   }
   .intro-tap-hint {
-    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.75rem;
     color: var(--text-dim);
-    border: 1px solid var(--card-border);
+    border: 1px solid var(--border);
     border-radius: 50px;
-    padding: 10px 24px;
-    margin-top: 16px;
+    padding: 11px 22px;
+    letter-spacing: 1px;
+  }
+  .intro-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    animation: blink 1.4s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%,100% { opacity: 0.25; }
+    50% { opacity: 1; }
   }
 
-  /* ── GAME SCREEN ── */
+  /* ══════════════════════════════
+     GAME
+  ══════════════════════════════ */
   #screen-game {
-    padding-top: calc(var(--safe-top) + 8px);
-    padding-bottom: calc(var(--safe-bottom) + 8px);
-    gap: 8px;
+    padding-top: calc(var(--safe-top) + 10px);
+    padding-bottom: calc(var(--safe-bottom) + 10px);
+    gap: 10px;
   }
+
   .game-topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 4px 0;
   }
   .game-score-block {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 1px;
+    min-width: 64px;
   }
   .game-score-name {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     color: var(--text-dim);
   }
   .game-score-val {
-    font-size: 1.5rem;
-    font-weight: 800;
+    font-size: 1.7rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -1px;
   }
   .game-score-val.team0 { color: var(--lowen); }
   .game-score-val.team1 { color: var(--adler); }
+
+  .game-center-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
   .game-turn-indicator {
-    font-size: 0.65rem;
+    font-size: 0.58rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 3px 8px;
+    letter-spacing: 1.5px;
+    padding: 4px 12px;
     border-radius: 20px;
     font-weight: 700;
   }
-  .game-turn-indicator.team0 { background: var(--lowen); color: #000; }
-  .game-turn-indicator.team1 { background: var(--adler); color: #fff; }
+  .game-turn-indicator.team0 {
+    background: var(--lowen-muted);
+    color: var(--lowen);
+    border: 1px solid var(--lowen-border);
+  }
+  .game-turn-indicator.team1 {
+    background: var(--adler-muted);
+    color: var(--adler);
+    border: 1px solid var(--adler-border);
+  }
   .game-cards-left {
-    font-size: 0.7rem;
+    font-size: 0.58rem;
     color: var(--text-dim);
-    text-align: right;
   }
 
-  /* Card */
+  /* THE CARD */
   .card-area {
     flex: 1;
     display: flex;
     flex-direction: column;
     background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius);
-    padding: 24px 20px 20px;
+    border-radius: 22px;
+    padding: 26px 22px 38px;
     position: relative;
     overflow: hidden;
     touch-action: none;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.05) inset,
+      0 4px 0 rgba(0,0,0,0.25),
+      0 12px 40px rgba(0,0,0,0.55),
+      0 32px 80px rgba(0,0,0,0.3);
   }
+
+  /* card corner marks */
+  .card-corner {
+    position: absolute;
+    font-size: 0.5rem;
+    font-weight: 700;
+    color: var(--card-dim);
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+  .card-corner.tl { top: 10px; left: 12px; }
+  .card-corner.br { bottom: 36px; right: 12px; transform: rotate(180deg); }
+
   .card-word {
-    font-size: clamp(1.4rem, 9vw, 2.6rem);
-    font-weight: 800;
+    font-size: clamp(1.6rem, 9.5vw, 2.8rem);
+    font-weight: 900;
     text-align: center;
-    line-height: 1.2;
-    margin-bottom: 20px;
+    line-height: 1.15;
+    color: var(--card-ink);
+    margin-bottom: 16px;
     overflow-wrap: break-word;
     word-break: break-word;
     flex-shrink: 0;
+    letter-spacing: -0.5px;
+    font-family: Georgia, 'Times New Roman', serif;
   }
+
   .card-divider {
-    width: 40px;
-    height: 2px;
-    background: var(--card-border);
-    margin: 0 auto 16px;
-    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 auto 14px;
+    width: 85%;
   }
+  .card-divider::before, .card-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(26,23,20,0.12);
+  }
+  .card-divider-label {
+    font-size: 0.52rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--forbidden);
+    opacity: 0.55;
+  }
+
   .card-forbidden-list {
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     overflow-y: auto;
     min-height: 0;
     flex: 1;
   }
   .card-forbidden-list li {
     text-align: center;
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 1rem;
+    font-weight: 700;
     color: var(--forbidden);
-    text-decoration: line-through;
-    text-decoration-color: rgba(231,76,60,0.4);
-  }
-  .card-swipe-hint {
-    position: absolute;
-    bottom: 10px;
-    left: 0; right: 0;
-    text-align: center;
-    font-size: 0.7rem;
-    color: var(--text-dim);
-    letter-spacing: 0.5px;
+    background: rgba(192,57,43,0.07);
+    border-radius: 9px;
+    padding: 7px 14px;
   }
 
-  /* Timer */
+  .card-swipe-hint {
+    position: absolute;
+    bottom: 12px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 0.6rem;
+    color: rgba(26,23,20,0.28);
+    letter-spacing: 0.4px;
+  }
+
+  /* TIMER */
   .timer-area {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 4px 0;
+    gap: 8px;
+    padding: 2px 0;
   }
   .timer-ring-wrap {
     position: relative;
-    width: 90px;
-    height: 90px;
+    width: 76px;
+    height: 76px;
   }
-  .timer-ring-wrap svg {
-    transform: rotate(-90deg);
-  }
+  .timer-ring-wrap svg { transform: rotate(-90deg); }
   .timer-track {
     fill: none;
-    stroke: var(--card-border);
-    stroke-width: 6;
+    stroke: var(--surface2);
+    stroke-width: 5;
   }
   .timer-progress {
     fill: none;
     stroke: var(--lowen);
-    stroke-width: 6;
+    stroke-width: 5;
     stroke-linecap: round;
     transition: stroke-dashoffset 1s linear, stroke 0.5s;
   }
@@ -359,148 +489,196 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
-    font-weight: 800;
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: -1px;
   }
   .timer-controls {
     display: flex;
-    gap: 12px;
+    gap: 7px;
   }
   .btn-timer {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 50px;
-    color: var(--text);
-    font-size: 0.85rem;
+    color: var(--text-dim);
+    font-size: 0.72rem;
     font-weight: 600;
-    padding: 8px 18px;
+    padding: 7px 13px;
     cursor: pointer;
-    transition: background 0.15s;
+    letter-spacing: 0.3px;
+    transition: background 0.15s, color 0.15s;
   }
-  .btn-timer:active { background: var(--card-border); }
+  .btn-timer:active { background: var(--surface2); color: var(--text); }
 
-  /* ── ROUND END SCREEN ── */
+  /* ══════════════════════════════
+     ROUND END
+  ══════════════════════════════ */
   #screen-roundend {
     justify-content: center;
     align-items: center;
     text-align: center;
-    gap: 20px;
+    gap: 22px;
+  }
+  .roundend-eyebrow {
+    font-size: 0.6rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-dim);
   }
   .roundend-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 2px;
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1;
+    letter-spacing: -1px;
+    font-family: Georgia, serif;
   }
   .roundend-gained {
-    font-size: 1.1rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-dim);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 20px;
+    width: 100%;
   }
-  .roundend-gained strong {
-    font-size: 1.4rem;
-  }
+  .roundend-gained strong { font-size: 1.2rem; }
   .roundend-scores {
     display: flex;
-    gap: 32px;
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
   }
   .roundend-score-block {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
+    padding: 18px 12px;
+  }
+  .roundend-score-block + .roundend-score-block {
+    border-left: 1px solid var(--border);
   }
   .roundend-score-name {
-    font-size: 0.8rem;
+    font-size: 0.6rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
     color: var(--text-dim);
   }
   .roundend-score-val {
     font-size: 3rem;
-    font-weight: 800;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -2px;
   }
   .roundend-score-val.team0 { color: var(--lowen); }
   .roundend-score-val.team1 { color: var(--adler); }
   .roundend-btns {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     width: 100%;
-    margin-top: 8px;
   }
 
-  /* ── END SCREEN ── */
+  /* ══════════════════════════════
+     END
+  ══════════════════════════════ */
   #screen-end {
     justify-content: center;
     align-items: center;
     text-align: center;
-    gap: 20px;
+    gap: 24px;
   }
-  .end-title {
-    font-size: 1rem;
+  .end-eyebrow {
+    font-size: 0.6rem;
+    letter-spacing: 4px;
     text-transform: uppercase;
-    letter-spacing: 3px;
     color: var(--text-dim);
   }
   .end-winner {
-    font-size: 2.8rem;
-    font-weight: 800;
+    font-size: clamp(1.8rem, 11vw, 2.8rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    font-family: Georgia, serif;
   }
   .end-winner.team0 { color: var(--lowen); }
   .end-winner.team1 { color: var(--adler); }
-  .end-winner.tie { color: var(--text); }
+  .end-winner.tie   { color: var(--text); }
   .end-scores {
     display: flex;
-    gap: 32px;
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
   }
   .end-score-block {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
+    padding: 18px 12px;
+  }
+  .end-score-block + .end-score-block {
+    border-left: 1px solid var(--border);
   }
   .end-score-name {
-    font-size: 0.8rem;
+    font-size: 0.6rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
     color: var(--text-dim);
   }
   .end-score-val {
     font-size: 3rem;
-    font-weight: 800;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -2px;
   }
   .end-score-val.team0 { color: var(--lowen); }
   .end-score-val.team1 { color: var(--adler); }
 
-  /* Feedback flash */
+  /* FLASH FEEDBACK */
   .flash {
     position: fixed;
     inset: 0;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.1s;
-    z-index: 100;
+    z-index: 200;
+    transition: opacity 0.08s;
   }
-  .flash.green { background: rgba(39,174,96,0.25); }
-  .flash.red { background: rgba(231,76,60,0.25); }
-  .flash.show { opacity: 1; }
+  .flash.green { background: rgba(39,174,96,0.2); }
+  .flash.red   { background: rgba(231,76,60,0.2); }
+  .flash.show  { opacity: 1; }
 </style>
 </head>
 <body>
 
 <!-- ══ HOME ══ -->
 <div id="screen-home" class="screen active">
-  <div class="home-title">TABU</div>
+  <div class="home-header">
+    <div class="home-title">TABU</div>
+    <div class="home-rule"><div class="home-rule-dot"></div></div>
+  </div>
 
-  <div class="teams-row">
-    <div class="team-block">
-      <input id="team0-name-input" class="team-name-input" type="text" value="Löwen" maxlength="12">
-      <span id="home-score0" class="score-display" style="color:var(--lowen)">0</span>
-    </div>
-    <div class="score-sep">:</div>
-    <div class="team-block">
-      <input id="team1-name-input" class="team-name-input" type="text" value="Adler" maxlength="12">
-      <span id="home-score1" class="score-display" style="color:var(--adler)">0</span>
+  <div class="teams-card">
+    <div class="teams-row">
+      <div class="team-block">
+        <input id="team0-name-input" class="team-name-input" type="text" value="Löwen" maxlength="12">
+        <span id="home-score0" class="score-display" style="color:var(--lowen)">0</span>
+      </div>
+      <div class="score-sep">:</div>
+      <div class="team-block">
+        <input id="team1-name-input" class="team-name-input" type="text" value="Adler" maxlength="12">
+        <span id="home-score1" class="score-display" style="color:var(--adler)">0</span>
+      </div>
     </div>
   </div>
 
@@ -514,15 +692,18 @@
     <button class="btn-reset-cards" id="btn-reset-cards">Zurücksetzen</button>
   </div>
 
-  <button class="btn-primary" id="btn-start">SPIEL STARTEN</button>
+  <button class="btn-primary" id="btn-start">Spiel starten</button>
 </div>
 
 <!-- ══ TURN INTRO ══ -->
 <div id="screen-intro" class="screen">
-  <span class="intro-team-label">Jetzt dran</span>
+  <div class="intro-eyebrow">Jetzt dran</div>
   <div id="intro-team-name" class="intro-team-name"></div>
   <div class="intro-sub">erklärt die Wörter</div>
-  <div class="intro-tap-hint">Tippen um zu starten ▶</div>
+  <div class="intro-tap-hint">
+    <span class="intro-dot" style="background:currentColor"></span>
+    Tippen zum Starten
+  </div>
 </div>
 
 <!-- ══ GAME ══ -->
@@ -532,7 +713,7 @@
       <span id="game-name0" class="game-score-name">Löwen</span>
       <span id="game-score0" class="game-score-val team0">0</span>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+    <div class="game-center-info">
       <div id="game-turn-indicator" class="game-turn-indicator team0">am Erklären</div>
       <div id="game-cards-left" class="game-cards-left">— Karten</div>
     </div>
@@ -543,31 +724,34 @@
   </div>
 
   <div class="card-area" id="card-area">
+    <span class="card-corner tl">✕</span>
+    <span class="card-corner br">✕</span>
     <div id="card-word" class="card-word"></div>
-    <div class="card-divider"></div>
+    <div class="card-divider"><span class="card-divider-label">tabu</span></div>
     <ul id="card-forbidden" class="card-forbidden-list"></ul>
     <div class="card-swipe-hint">2× Tippen = Punkt ✓ &nbsp;|&nbsp; Wischen = Weiter ✗</div>
   </div>
 
   <div class="timer-area">
     <div class="timer-ring-wrap">
-      <svg width="90" height="90" viewBox="0 0 90 90">
-        <circle class="timer-track" cx="45" cy="45" r="39"/>
-        <circle id="timer-progress" class="timer-progress" cx="45" cy="45" r="39"/>
+      <svg width="76" height="76" viewBox="0 0 76 76">
+        <circle class="timer-track" cx="38" cy="38" r="33"/>
+        <circle id="timer-progress" class="timer-progress" cx="38" cy="38" r="33"/>
       </svg>
       <div id="timer-text" class="timer-text">90</div>
     </div>
     <div class="timer-controls">
       <button class="btn-timer" id="btn-pause">⏸ Pause</button>
       <button class="btn-timer" id="btn-reset-timer">↺ Reset</button>
-      <button class="btn-timer" id="btn-end-round" style="color:#e74c3c;border-color:#e74c3c">■ Runde</button>
+      <button class="btn-timer" id="btn-end-round" style="color:#c0392b;border-color:rgba(192,57,43,0.35)">■ Runde</button>
     </div>
   </div>
 </div>
 
 <!-- ══ ROUND END ══ -->
 <div id="screen-roundend" class="screen">
-  <div class="roundend-title">Runde beendet</div>
+  <div class="roundend-eyebrow">Runde beendet</div>
+  <div class="roundend-title">Ergebnis</div>
   <div id="roundend-gained" class="roundend-gained"></div>
   <div class="roundend-scores">
     <div class="roundend-score-block">
@@ -587,7 +771,7 @@
 
 <!-- ══ END ══ -->
 <div id="screen-end" class="screen">
-  <div class="end-title">Spielende</div>
+  <div class="end-eyebrow">Spielende</div>
   <div id="end-winner" class="end-winner"></div>
   <div class="end-scores">
     <div class="end-score-block">
@@ -733,6 +917,8 @@ function startIntro() {
   const el = document.getElementById('intro-team-name');
   el.textContent = teamNames[activeTeam];
   el.style.color = activeTeam === 0 ? 'var(--lowen)' : 'var(--adler)';
+  const dot = document.querySelector('.intro-dot');
+  if (dot) dot.style.background = activeTeam === 0 ? 'var(--lowen)' : 'var(--adler)';
   showScreen('intro');
 }
 
@@ -797,7 +983,7 @@ function markCurrentCardUsed() {
 }
 
 // ── TIMER ──
-const CIRCUMFERENCE = 2 * Math.PI * 39; // r=39
+const CIRCUMFERENCE = 2 * Math.PI * 33; // r=33
 const progressEl = document.getElementById('timer-progress');
 progressEl.style.strokeDasharray = CIRCUMFERENCE;
 
@@ -808,7 +994,7 @@ function setTimerDisplay(sec) {
   if (frac > 0.5) {
     progressEl.style.stroke = 'var(--lowen)';
   } else if (frac > 0.25) {
-    progressEl.style.stroke = '#e67e22';
+    progressEl.style.stroke = '#c0852a';
   } else {
     progressEl.style.stroke = 'var(--forbidden)';
   }
