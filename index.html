@@ -687,6 +687,11 @@
     <input id="round-time-input" class="setting-input" type="number" min="10" max="999" value="90">
   </div>
 
+  <div class="setting-row">
+    <span class="setting-label">Anzahl Runden</span>
+    <input id="rounds-input" class="setting-input" type="number" min="1" max="99" value="10">
+  </div>
+
   <div class="cards-row">
     <span class="cards-label">Verfügbare Karten: <span id="cards-available-count">—</span></span>
     <button class="btn-reset-cards" id="btn-reset-cards">Zurücksetzen</button>
@@ -715,6 +720,7 @@
     </div>
     <div class="game-center-info">
       <div id="game-turn-indicator" class="game-turn-indicator team0">am Erklären</div>
+      <div id="game-round-indicator" class="game-cards-left">Runde — / —</div>
       <div id="game-cards-left" class="game-cards-left">— Karten</div>
     </div>
     <div class="game-score-block">
@@ -750,7 +756,7 @@
 
 <!-- ══ ROUND END ══ -->
 <div id="screen-roundend" class="screen">
-  <div class="roundend-eyebrow">Runde beendet</div>
+  <div id="roundend-eyebrow" class="roundend-eyebrow">Runde beendet</div>
   <div class="roundend-title">Ergebnis</div>
   <div id="roundend-gained" class="roundend-gained"></div>
   <div class="roundend-scores">
@@ -836,16 +842,18 @@ const CARDS = [
 // ══════════════════════════════════════════════
 const USED_KEY = 'tabu_used_ids';
 
-let teamNames  = ['Löwen', 'Adler'];
-let scores     = [0, 0];
-let activeTeam = 0;          // 0 or 1
-let roundTime  = 90;         // seconds, from input
-let roundPool  = [];         // shuffled available cards for this round
-let poolIndex  = 0;
-let timerSec   = 0;
+let teamNames    = ['Löwen', 'Adler'];
+let scores       = [0, 0];
+let activeTeam   = 0;          // 0 or 1
+let roundTime    = 90;         // seconds, from input
+let totalRounds  = 10;         // total rounds to play
+let currentRound = 1;          // current round number (1-based)
+let roundPool    = [];         // shuffled available cards for this round
+let poolIndex    = 0;
+let timerSec     = 0;
 let timerInterval = null;
-let paused     = false;
-let roundGained = [0, 0];    // points gained this round
+let paused       = false;
+let roundGained  = [0, 0];    // points gained this round
 
 function getUsedIds() {
   try { return new Set(JSON.parse(localStorage.getItem(USED_KEY) || '[]')); }
@@ -899,14 +907,20 @@ document.getElementById('round-time-input').addEventListener('change', e => {
   roundTime = Math.max(10, parseInt(e.target.value) || 90);
   e.target.value = roundTime;
 });
+document.getElementById('rounds-input').addEventListener('change', e => {
+  totalRounds = Math.max(1, parseInt(e.target.value) || 10);
+  e.target.value = totalRounds;
+});
 document.getElementById('btn-reset-cards').addEventListener('click', () => {
   resetUsedIds();
   updateHomeUI();
 });
 document.getElementById('btn-start').addEventListener('click', () => {
-  roundTime = Math.max(10, parseInt(document.getElementById('round-time-input').value) || 90);
-  scores = [0, 0];
-  activeTeam = 0;
+  roundTime    = Math.max(10, parseInt(document.getElementById('round-time-input').value) || 90);
+  totalRounds  = Math.max(1,  parseInt(document.getElementById('rounds-input').value) || 10);
+  scores       = [0, 0];
+  activeTeam   = 0;
+  currentRound = 1;
   startIntro();
 });
 
@@ -954,6 +968,8 @@ function updateGameTopbar() {
   const ind = document.getElementById('game-turn-indicator');
   ind.textContent = teamNames[activeTeam] + ' erklärt';
   ind.className = 'game-turn-indicator team' + activeTeam;
+  document.getElementById('game-round-indicator').textContent =
+    'Runde ' + currentRound + ' / ' + totalRounds;
   document.getElementById('game-cards-left').textContent =
     (roundPool.length - poolIndex) + ' Karten';
 }
@@ -1118,10 +1134,17 @@ function endRound(timedOut) {
     ` &nbsp; ` +
     `<span style="color:var(--adler)">${teamNames[1]}: <strong>+${gained1}</strong></span>`;
 
+  const isLastRound = currentRound >= totalRounds;
+  document.getElementById('roundend-eyebrow').textContent =
+    'Runde ' + currentRound + ' / ' + totalRounds + ' beendet';
+  document.getElementById('btn-next-round').style.display = isLastRound ? 'none' : '';
+  document.getElementById('btn-end-game').textContent = isLastRound ? 'Ergebnis anzeigen' : 'Spiel beenden';
+
   showScreen('roundend');
 }
 
 document.getElementById('btn-next-round').addEventListener('click', () => {
+  currentRound++;
   activeTeam = 1 - activeTeam;
   startIntro();
 });
@@ -1151,10 +1174,12 @@ function showEndScreen() {
 }
 
 document.getElementById('btn-new-game').addEventListener('click', () => {
-  scores = [0, 0];
-  activeTeam = 0;
+  scores       = [0, 0];
+  activeTeam   = 0;
+  currentRound = 1;
   document.getElementById('team0-name-input').value = teamNames[0];
   document.getElementById('team1-name-input').value = teamNames[1];
+  document.getElementById('rounds-input').value = totalRounds;
   updateHomeUI();
   showScreen('home');
 });
