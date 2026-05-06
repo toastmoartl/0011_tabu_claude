@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tabu</title>
+<style>
+  :root {
+    --lowen: #F5A623;
+    --lowen-dark: #c7851a;
+    --adler: #2D6BE4;
+    --adler-dark: #1f4faa;
+    --bg: #1a1a2e;
+    --card-bg: #16213e;
+    --card-border: #0f3460;
+    --text: #e0e0e0;
+    --text-dim: #888;
+    --forbidden: #e74c3c;
+    --green: #27ae60;
+    --radius: 18px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  /* ── SCREEN SYSTEM ── */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: calc(var(--safe-top) + 16px) 20px calc(var(--safe-bottom) + 16px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .screen.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* ── HOME SCREEN ── */
+  #screen-home {
+    justify-content: center;
+    gap: 24px;
+  }
+  .home-title {
+    text-align: center;
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, var(--lowen), var(--adler));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .teams-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  .team-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .team-name-input {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--text-dim);
+    color: var(--text);
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: center;
+    width: 100%;
+    padding: 4px 0;
+    outline: none;
+  }
+  .team-name-input:focus {
+    border-bottom-color: var(--text);
+  }
+  #team0-name-input { border-bottom-color: var(--lowen); color: var(--lowen); }
+  #team1-name-input { border-bottom-color: var(--adler); color: var(--adler); }
+  .score-display {
+    font-size: 2rem;
+    font-weight: 800;
+  }
+  .score-sep {
+    font-size: 1.4rem;
+    color: var(--text-dim);
+    padding-top: 8px;
+  }
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 12px 16px;
+  }
+  .setting-label {
+    font-size: 0.95rem;
+    color: var(--text-dim);
+  }
+  .setting-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--text-dim);
+    color: var(--text);
+    font-size: 1.1rem;
+    font-weight: 700;
+    width: 60px;
+    text-align: center;
+    outline: none;
+  }
+  .cards-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 12px 16px;
+  }
+  .cards-label {
+    font-size: 0.95rem;
+    color: var(--text-dim);
+  }
+  #cards-available-count {
+    font-weight: 700;
+    color: var(--text);
+  }
+  .btn-reset-cards {
+    background: transparent;
+    border: 1px solid var(--text-dim);
+    color: var(--text-dim);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .btn-reset-cards:active { opacity: 0.6; }
+
+  /* ── BUTTONS ── */
+  .btn-primary {
+    background: linear-gradient(135deg, var(--lowen), var(--adler));
+    border: none;
+    border-radius: var(--radius);
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 16px;
+    cursor: pointer;
+    width: 100%;
+    letter-spacing: 1px;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:active { opacity: 0.8; }
+  .btn-secondary {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 14px;
+    cursor: pointer;
+    width: 100%;
+    transition: opacity 0.15s;
+  }
+  .btn-secondary:active { opacity: 0.6; }
+
+  /* ── TURN INTRO SCREEN ── */
+  #screen-intro {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 32px;
+  }
+  .intro-team-label {
+    font-size: 1rem;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .intro-team-name {
+    font-size: 3rem;
+    font-weight: 800;
+  }
+  .intro-sub {
+    font-size: 1rem;
+    color: var(--text-dim);
+    margin-top: -20px;
+  }
+  .intro-tap-hint {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    border: 1px solid var(--card-border);
+    border-radius: 50px;
+    padding: 10px 24px;
+    margin-top: 16px;
+  }
+
+  /* ── GAME SCREEN ── */
+  #screen-game {
+    padding-top: calc(var(--safe-top) + 8px);
+    padding-bottom: calc(var(--safe-bottom) + 8px);
+    gap: 8px;
+  }
+  .game-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+  }
+  .game-score-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .game-score-name {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+  }
+  .game-score-val {
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+  .game-score-val.team0 { color: var(--lowen); }
+  .game-score-val.team1 { color: var(--adler); }
+  .game-turn-indicator {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+  .game-turn-indicator.team0 { background: var(--lowen); color: #000; }
+  .game-turn-indicator.team1 { background: var(--adler); color: #fff; }
+  .game-cards-left {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-align: right;
+  }
+
+  /* Card */
+  .card-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 24px 20px 20px;
+    position: relative;
+    overflow: hidden;
+    touch-action: none;
+  }
+  .card-word {
+    font-size: clamp(1.4rem, 9vw, 2.6rem);
+    font-weight: 800;
+    text-align: center;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    flex-shrink: 0;
+  }
+  .card-divider {
+    width: 40px;
+    height: 2px;
+    background: var(--card-border);
+    margin: 0 auto 16px;
+    border-radius: 2px;
+  }
+  .card-forbidden-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    min-height: 0;
+    flex: 1;
+  }
+  .card-forbidden-list li {
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--forbidden);
+    text-decoration: line-through;
+    text-decoration-color: rgba(231,76,60,0.4);
+  }
+  .card-swipe-hint {
+    position: absolute;
+    bottom: 10px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+
+  /* Timer */
+  .timer-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+  }
+  .timer-ring-wrap {
+    position: relative;
+    width: 90px;
+    height: 90px;
+  }
+  .timer-ring-wrap svg {
+    transform: rotate(-90deg);
+  }
+  .timer-track {
+    fill: none;
+    stroke: var(--card-border);
+    stroke-width: 6;
+  }
+  .timer-progress {
+    fill: none;
+    stroke: var(--lowen);
+    stroke-width: 6;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 0.5s;
+  }
+  .timer-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+  .timer-controls {
+    display: flex;
+    gap: 12px;
+  }
+  .btn-timer {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 50px;
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-timer:active { background: var(--card-border); }
+
+  /* ── ROUND END SCREEN ── */
+  #screen-roundend {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+  }
+  .roundend-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .roundend-gained {
+    font-size: 1.1rem;
+  }
+  .roundend-gained strong {
+    font-size: 1.4rem;
+  }
+  .roundend-scores {
+    display: flex;
+    gap: 32px;
+  }
+  .roundend-score-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .roundend-score-name {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+  }
+  .roundend-score-val {
+    font-size: 3rem;
+    font-weight: 800;
+  }
+  .roundend-score-val.team0 { color: var(--lowen); }
+  .roundend-score-val.team1 { color: var(--adler); }
+  .roundend-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  /* ── END SCREEN ── */
+  #screen-end {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+  }
+  .end-title {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+  }
+  .end-winner {
+    font-size: 2.8rem;
+    font-weight: 800;
+  }
+  .end-winner.team0 { color: var(--lowen); }
+  .end-winner.team1 { color: var(--adler); }
+  .end-winner.tie { color: var(--text); }
+  .end-scores {
+    display: flex;
+    gap: 32px;
+  }
+  .end-score-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .end-score-name {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+  }
+  .end-score-val {
+    font-size: 3rem;
+    font-weight: 800;
+  }
+  .end-score-val.team0 { color: var(--lowen); }
+  .end-score-val.team1 { color: var(--adler); }
+
+  /* Feedback flash */
+  .flash {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s;
+    z-index: 100;
+  }
+  .flash.green { background: rgba(39,174,96,0.25); }
+  .flash.red { background: rgba(231,76,60,0.25); }
+  .flash.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- ══ HOME ══ -->
+<div id="screen-home" class="screen active">
+  <div class="home-title">TABU</div>
+
+  <div class="teams-row">
+    <div class="team-block">
+      <input id="team0-name-input" class="team-name-input" type="text" value="Löwen" maxlength="12">
+      <span id="home-score0" class="score-display" style="color:var(--lowen)">0</span>
+    </div>
+    <div class="score-sep">:</div>
+    <div class="team-block">
+      <input id="team1-name-input" class="team-name-input" type="text" value="Adler" maxlength="12">
+      <span id="home-score1" class="score-display" style="color:var(--adler)">0</span>
+    </div>
+  </div>
+
+  <div class="setting-row">
+    <span class="setting-label">Sekunden pro Runde</span>
+    <input id="round-time-input" class="setting-input" type="number" min="10" max="999" value="90">
+  </div>
+
+  <div class="cards-row">
+    <span class="cards-label">Verfügbare Karten: <span id="cards-available-count">—</span></span>
+    <button class="btn-reset-cards" id="btn-reset-cards">Zurücksetzen</button>
+  </div>
+
+  <button class="btn-primary" id="btn-start">SPIEL STARTEN</button>
+</div>
+
+<!-- ══ TURN INTRO ══ -->
+<div id="screen-intro" class="screen">
+  <span class="intro-team-label">Jetzt dran</span>
+  <div id="intro-team-name" class="intro-team-name"></div>
+  <div class="intro-sub">erklärt die Wörter</div>
+  <div class="intro-tap-hint">Tippen um zu starten ▶</div>
+</div>
+
+<!-- ══ GAME ══ -->
+<div id="screen-game" class="screen">
+  <div class="game-topbar">
+    <div class="game-score-block">
+      <span id="game-name0" class="game-score-name">Löwen</span>
+      <span id="game-score0" class="game-score-val team0">0</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div id="game-turn-indicator" class="game-turn-indicator team0">am Erklären</div>
+      <div id="game-cards-left" class="game-cards-left">— Karten</div>
+    </div>
+    <div class="game-score-block">
+      <span id="game-name1" class="game-score-name">Adler</span>
+      <span id="game-score1" class="game-score-val team1">0</span>
+    </div>
+  </div>
+
+  <div class="card-area" id="card-area">
+    <div id="card-word" class="card-word"></div>
+    <div class="card-divider"></div>
+    <ul id="card-forbidden" class="card-forbidden-list"></ul>
+    <div class="card-swipe-hint">2× Tippen = Punkt ✓ &nbsp;|&nbsp; Wischen = Weiter ✗</div>
+  </div>
+
+  <div class="timer-area">
+    <div class="timer-ring-wrap">
+      <svg width="90" height="90" viewBox="0 0 90 90">
+        <circle class="timer-track" cx="45" cy="45" r="39"/>
+        <circle id="timer-progress" class="timer-progress" cx="45" cy="45" r="39"/>
+      </svg>
+      <div id="timer-text" class="timer-text">90</div>
+    </div>
+    <div class="timer-controls">
+      <button class="btn-timer" id="btn-pause">⏸ Pause</button>
+      <button class="btn-timer" id="btn-reset-timer">↺ Reset</button>
+      <button class="btn-timer" id="btn-end-round" style="color:#e74c3c;border-color:#e74c3c">■ Runde</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ROUND END ══ -->
+<div id="screen-roundend" class="screen">
+  <div class="roundend-title">Runde beendet</div>
+  <div id="roundend-gained" class="roundend-gained"></div>
+  <div class="roundend-scores">
+    <div class="roundend-score-block">
+      <span id="re-name0" class="roundend-score-name">Löwen</span>
+      <span id="re-score0" class="roundend-score-val team0">0</span>
+    </div>
+    <div class="roundend-score-block">
+      <span id="re-name1" class="roundend-score-name">Adler</span>
+      <span id="re-score1" class="roundend-score-val team1">0</span>
+    </div>
+  </div>
+  <div class="roundend-btns">
+    <button class="btn-primary" id="btn-next-round">Nächste Runde</button>
+    <button class="btn-secondary" id="btn-end-game">Spiel beenden</button>
+  </div>
+</div>
+
+<!-- ══ END ══ -->
+<div id="screen-end" class="screen">
+  <div class="end-title">Spielende</div>
+  <div id="end-winner" class="end-winner"></div>
+  <div class="end-scores">
+    <div class="end-score-block">
+      <span id="end-name0" class="end-score-name">Löwen</span>
+      <span id="end-score0" class="end-score-val team0">0</span>
+    </div>
+    <div class="end-score-block">
+      <span id="end-name1" class="end-score-name">Adler</span>
+      <span id="end-score1" class="end-score-val team1">0</span>
+    </div>
+  </div>
+  <button class="btn-primary" id="btn-new-game" style="width:100%">Neues Spiel</button>
+</div>
+
+<!-- Flash overlay -->
+<div id="flash" class="flash"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  CARD DATA  — edit freely
+// ══════════════════════════════════════════════
+const CARDS = [
+  { id:  1, word: "Fußball",     forbidden: ["Ball", "Tor", "Spieler", "Mannschaft", "Schuss"] },
+  { id:  2, word: "Kühlschrank", forbidden: ["Kühl", "kalt", "Eis", "Lebensmittel", "Strom"] },
+  { id:  3, word: "Regenschirm", forbidden: ["Regen", "nass", "Schirm", "Wetter", "aufspannen"] },
+  { id:  4, word: "Bibliothek",  forbidden: ["Buch", "lesen", "Bücher", "ausleihen", "Regal"] },
+  { id:  5, word: "Schokolade",  forbidden: ["süß", "Kakao", "Tafel", "Schokolade", "essen"] },
+  { id:  6, word: "Fahrrad",     forbidden: ["fahren", "Rad", "Pedal", "Sattel", "Kette"] },
+  { id:  7, word: "Zahnarzt",    forbidden: ["Zahn", "Arzt", "bohren", "Schmerz", "Mundpflege"] },
+  { id:  8, word: "Supermarkt",  forbidden: ["Einkaufen", "Kasse", "Regal", "Lebensmittel", "Markt"] },
+  { id:  9, word: "Sonnenbrille",forbidden: ["Sonne", "Brille", "UV", "Augen", "Strand"] },
+  { id: 10, word: "Feuerwehr",   forbidden: ["Feuer", "löschen", "Schlauch", "Feuerwehrmann", "Sirene"] },
+  { id: 11, word: "Flugzeug",    forbidden: ["fliegen", "Pilot", "Flügel", "Himmel", "Reise"] },
+  { id: 12, word: "Hochzeit",    forbidden: ["Braut", "Ehe", "Ring", "Fest", "heiraten"] },
+  { id: 13, word: "Erdbeere",    forbidden: ["rot", "Frucht", "Garten", "Marmelade", "süß"] },
+  { id: 14, word: "Gitarre",     forbidden: ["Musik", "Saiten", "spielen", "Instrument", "Rock"] },
+  { id: 15, word: "Krankenhaus", forbidden: ["krank", "Arzt", "Operation", "Bett", "Pfleger"] },
+  { id: 16, word: "Schneemann",  forbidden: ["Schnee", "Winter", "Karotte", "kalt", "bauen"] },
+  { id: 17, word: "Taschenlampe",forbidden: ["Licht", "Batterie", "leuchten", "Dunkel", "Tasche"] },
+  { id: 18, word: "Spaghetti",   forbidden: ["Nudeln", "Italien", "Soße", "kochen", "lang"] },
+  { id: 19, word: "Elefant",     forbidden: ["groß", "Rüssel", "Afrika", "grau", "Tier"] },
+  { id: 20, word: "Kreditkarte", forbidden: ["Geld", "Bank", "zahlen", "Karte", "Plastik"] },
+  { id: 21, word: "Geburtstag",  forbidden: ["Kerze", "Kuchen", "feiern", "Alter", "Geschenk"] },
+  { id: 22, word: "Brücke",      forbidden: ["Wasser", "überqueren", "Fluss", "Bogen", "bauen"] },
+  { id: 23, word: "Kaffee",      forbidden: ["trinken", "heiß", "schwarz", "Tasse", "Bohne"] },
+  { id: 24, word: "Pinguin",     forbidden: ["Vogel", "kalt", "Antarktis", "schwarz-weiß", "Zoo"] },
+  { id: 25, word: "Wandern",     forbidden: ["gehen", "Berg", "Rucksack", "Natur", "Weg"] },
+  { id: 26, word: "Regenwald",   forbidden: ["Dschungel", "Regen", "Tropisch", "Wald", "Affe"] },
+  { id: 27, word: "Leuchtturm",  forbidden: ["Licht", "Meer", "Schiff", "Küste", "blinken"] },
+  { id: 28, word: "Smartphone",  forbidden: ["Handy", "App", "Telefon", "Bildschirm", "Akku"] },
+  { id: 29, word: "Pyramide",    forbidden: ["Ägypten", "Pharao", "Wüste", "alt", "Stein"] },
+  { id: 30, word: "Olympiade",   forbidden: ["Sport", "Medaille", "Ringe", "Wettkampf", "Athen"] },
+  { id: 31, word: "Schmetterling",forbidden: ["Flügel", "bunt", "Raupe", "Blume", "fliegen"] },
+  { id: 32, word: "Wasserfall",  forbidden: ["Wasser", "fällt", "Natur", "laut", "Fluss"] },
+  { id: 33, word: "Banane",      forbidden: ["gelb", "Affe", "Frucht", "krumm", "Schale"] },
+  { id: 34, word: "Pizza",       forbidden: ["Käse", "Teig", "Italien", "rund", "Ofen"] },
+  { id: 35, word: "Kalender",    forbidden: ["Datum", "Monat", "Jahr", "Termin", "Woche"] },
+];
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+const USED_KEY = 'tabu_used_ids';
+
+let teamNames  = ['Löwen', 'Adler'];
+let scores     = [0, 0];
+let activeTeam = 0;          // 0 or 1
+let roundTime  = 90;         // seconds, from input
+let roundPool  = [];         // shuffled available cards for this round
+let poolIndex  = 0;
+let timerSec   = 0;
+let timerInterval = null;
+let paused     = false;
+let roundGained = [0, 0];    // points gained this round
+
+function getUsedIds() {
+  try { return new Set(JSON.parse(localStorage.getItem(USED_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+function saveUsedIds(set) {
+  localStorage.setItem(USED_KEY, JSON.stringify([...set]));
+}
+function resetUsedIds() {
+  localStorage.removeItem(USED_KEY);
+}
+
+function availableCards() {
+  const used = getUsedIds();
+  return CARDS.filter(c => !used.has(c.id));
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ══════════════════════════════════════════════
+//  SCREEN NAVIGATION
+// ══════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+// ══════════════════════════════════════════════
+//  HOME
+// ══════════════════════════════════════════════
+function updateHomeUI() {
+  document.getElementById('home-score0').textContent = scores[0];
+  document.getElementById('home-score1').textContent = scores[1];
+  document.getElementById('cards-available-count').textContent = availableCards().length;
+}
+
+document.getElementById('team0-name-input').addEventListener('input', e => {
+  teamNames[0] = e.target.value || 'Löwen';
+});
+document.getElementById('team1-name-input').addEventListener('input', e => {
+  teamNames[1] = e.target.value || 'Adler';
+});
+document.getElementById('round-time-input').addEventListener('change', e => {
+  roundTime = Math.max(10, parseInt(e.target.value) || 90);
+  e.target.value = roundTime;
+});
+document.getElementById('btn-reset-cards').addEventListener('click', () => {
+  resetUsedIds();
+  updateHomeUI();
+});
+document.getElementById('btn-start').addEventListener('click', () => {
+  roundTime = Math.max(10, parseInt(document.getElementById('round-time-input').value) || 90);
+  scores = [0, 0];
+  activeTeam = 0;
+  startIntro();
+});
+
+// ══════════════════════════════════════════════
+//  INTRO
+// ══════════════════════════════════════════════
+function startIntro() {
+  const el = document.getElementById('intro-team-name');
+  el.textContent = teamNames[activeTeam];
+  el.style.color = activeTeam === 0 ? 'var(--lowen)' : 'var(--adler)';
+  showScreen('intro');
+}
+
+document.getElementById('screen-intro').addEventListener('click', startRound);
+
+// ══════════════════════════════════════════════
+//  ROUND
+// ══════════════════════════════════════════════
+function startRound() {
+  const avail = availableCards();
+  if (avail.length === 0) {
+    alert('Keine Karten mehr verfügbar. Bitte Karten zurücksetzen.');
+    showScreen('home');
+    updateHomeUI();
+    return;
+  }
+  roundPool  = shuffle(avail);
+  poolIndex  = 0;
+  roundGained = [0, 0];
+  paused = false;
+
+  updateGameTopbar();
+  showCard();
+  showScreen('game');
+  startTimer();
+}
+
+function updateGameTopbar() {
+  document.getElementById('game-name0').textContent = teamNames[0];
+  document.getElementById('game-name1').textContent = teamNames[1];
+  document.getElementById('game-score0').textContent = scores[0];
+  document.getElementById('game-score1').textContent = scores[1];
+  const ind = document.getElementById('game-turn-indicator');
+  ind.textContent = teamNames[activeTeam] + ' erklärt';
+  ind.className = 'game-turn-indicator team' + activeTeam;
+  document.getElementById('game-cards-left').textContent =
+    (roundPool.length - poolIndex) + ' Karten';
+}
+
+function showCard() {
+  if (poolIndex >= roundPool.length) {
+    endRound(false);
+    return;
+  }
+  const card = roundPool[poolIndex];
+  document.getElementById('card-word').textContent = card.word;
+  const ul = document.getElementById('card-forbidden');
+  ul.innerHTML = '';
+  card.forbidden.forEach(f => {
+    const li = document.createElement('li');
+    li.textContent = f;
+    ul.appendChild(li);
+  });
+  document.getElementById('game-cards-left').textContent =
+    (roundPool.length - poolIndex) + ' Karten';
+}
+
+function markCurrentCardUsed() {
+  const used = getUsedIds();
+  used.add(roundPool[poolIndex].id);
+  saveUsedIds(used);
+}
+
+// ── TIMER ──
+const CIRCUMFERENCE = 2 * Math.PI * 39; // r=39
+const progressEl = document.getElementById('timer-progress');
+progressEl.style.strokeDasharray = CIRCUMFERENCE;
+
+function setTimerDisplay(sec) {
+  document.getElementById('timer-text').textContent = sec;
+  const frac = sec / roundTime;
+  progressEl.style.strokeDashoffset = CIRCUMFERENCE * (1 - frac);
+  if (frac > 0.5) {
+    progressEl.style.stroke = 'var(--lowen)';
+  } else if (frac > 0.25) {
+    progressEl.style.stroke = '#e67e22';
+  } else {
+    progressEl.style.stroke = 'var(--forbidden)';
+  }
+}
+
+function startTimer() {
+  stopTimer();
+  timerSec = roundTime;
+  setTimerDisplay(timerSec);
+  paused = false;
+  document.getElementById('btn-pause').textContent = '⏸ Pause';
+  timerInterval = setInterval(() => {
+    if (paused) return;
+    timerSec--;
+    setTimerDisplay(timerSec);
+    if (timerSec <= 0) {
+      stopTimer();
+      // other team gets point for unfinished card
+      const other = 1 - activeTeam;
+      scores[other]++;
+      roundGained[other]++;
+      markCurrentCardUsed();
+      endRound(true);
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+document.getElementById('btn-pause').addEventListener('click', () => {
+  paused = !paused;
+  document.getElementById('btn-pause').textContent = paused ? '▶ Weiter' : '⏸ Pause';
+});
+document.getElementById('btn-reset-timer').addEventListener('click', () => {
+  timerSec = roundTime;
+  setTimerDisplay(timerSec);
+});
+document.getElementById('btn-end-round').addEventListener('click', () => {
+  stopTimer();
+  endRound(false);
+});
+
+// ── GESTURES on card-area ──
+const cardArea = document.getElementById('card-area');
+let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
+let lastTapTime  = 0;
+
+cardArea.addEventListener('touchstart', e => {
+  touchStartX    = e.changedTouches[0].clientX;
+  touchStartY    = e.changedTouches[0].clientY;
+  touchStartTime = Date.now();
+}, { passive: true });
+
+cardArea.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  const dt = Date.now() - touchStartTime;
+  const now = Date.now();
+
+  // Swipe: significant horizontal movement, little vertical, quick
+  if (Math.abs(dx) > 60 && Math.abs(dy) < 80 && dt < 400) {
+    handleSkip();
+    return;
+  }
+
+  // Double-tap: two taps within 300 ms
+  if (Math.abs(dx) < 20 && Math.abs(dy) < 20) {
+    if (now - lastTapTime < 300) {
+      handleScore();
+      lastTapTime = 0;
+    } else {
+      lastTapTime = now;
+    }
+  }
+}, { passive: true });
+
+function handleScore() {
+  if (poolIndex >= roundPool.length) return;
+  flash('green');
+  scores[activeTeam]++;
+  roundGained[activeTeam]++;
+  markCurrentCardUsed();
+  poolIndex++;
+  updateGameTopbar();
+  showCard();
+}
+
+function handleSkip() {
+  if (poolIndex >= roundPool.length) return;
+  flash('red');
+  const other = 1 - activeTeam;
+  scores[other]++;
+  roundGained[other]++;
+  markCurrentCardUsed();
+  poolIndex++;
+  updateGameTopbar();
+  showCard();
+}
+
+function flash(type) {
+  const el = document.getElementById('flash');
+  el.className = 'flash ' + type + ' show';
+  setTimeout(() => { el.classList.remove('show'); }, 200);
+}
+
+// ── ROUND END ──
+function endRound(timedOut) {
+  stopTimer();
+  document.getElementById('re-name0').textContent = teamNames[0];
+  document.getElementById('re-name1').textContent = teamNames[1];
+  document.getElementById('re-score0').textContent = scores[0];
+  document.getElementById('re-score1').textContent = scores[1];
+
+  const gained0 = roundGained[0];
+  const gained1 = roundGained[1];
+  const gainedEl = document.getElementById('roundend-gained');
+  gainedEl.innerHTML =
+    `<span style="color:var(--lowen)">${teamNames[0]}: <strong>+${gained0}</strong></span>` +
+    ` &nbsp; ` +
+    `<span style="color:var(--adler)">${teamNames[1]}: <strong>+${gained1}</strong></span>`;
+
+  showScreen('roundend');
+}
+
+document.getElementById('btn-next-round').addEventListener('click', () => {
+  activeTeam = 1 - activeTeam;
+  startIntro();
+});
+document.getElementById('btn-end-game').addEventListener('click', () => {
+  showEndScreen();
+});
+
+// ── END SCREEN ──
+function showEndScreen() {
+  document.getElementById('end-name0').textContent = teamNames[0];
+  document.getElementById('end-name1').textContent = teamNames[1];
+  document.getElementById('end-score0').textContent = scores[0];
+  document.getElementById('end-score1').textContent = scores[1];
+
+  const winner = document.getElementById('end-winner');
+  if (scores[0] > scores[1]) {
+    winner.textContent = teamNames[0] + ' gewinnt! 🏆';
+    winner.className = 'end-winner team0';
+  } else if (scores[1] > scores[0]) {
+    winner.textContent = teamNames[1] + ' gewinnt! 🏆';
+    winner.className = 'end-winner team1';
+  } else {
+    winner.textContent = 'Unentschieden!';
+    winner.className = 'end-winner tie';
+  }
+  showScreen('end');
+}
+
+document.getElementById('btn-new-game').addEventListener('click', () => {
+  scores = [0, 0];
+  activeTeam = 0;
+  document.getElementById('team0-name-input').value = teamNames[0];
+  document.getElementById('team1-name-input').value = teamNames[1];
+  updateHomeUI();
+  showScreen('home');
+});
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+updateHomeUI();
+</script>
+</body>
+</html>
