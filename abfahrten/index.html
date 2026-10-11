@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Abfahrten Fallrohrstraße</title>
+<style>
+  :root {
+    --bg: #f4f6fa; --card: #ffffff; --text: #1b2330; --muted: #6b7686;
+    --line: #e3e7ee; --accent: #e30613; --ok: #1a8f4c; --late: #d9480f;
+    --bus: #9c1a64; --tram: #d6001c; --ubahn: #0060a9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #11151c; --card: #1a2029; --text: #e8edf4; --muted: #95a0b0; --line: #2a323e; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  h1 { font-size: 1.5rem; margin: 0; }
+  .sub { color: var(--muted); font-size: .9rem; }
+  .clock { font-variant-numeric: tabular-nums; font-size: 1.25rem; font-weight: 600; }
+  ul { list-style: none; margin: 0; padding: 0; background: var(--card); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  li { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  li:last-child { border-bottom: 0; }
+  .line { display: inline-block; min-width: 52px; text-align: center; padding: 4px 8px; border-radius: 8px; color: #fff; font-weight: 700; background: var(--bus); }
+  .line.Tram { background: var(--tram); }
+  .line.UBahn { background: var(--ubahn); }
+  .dir { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .meta { color: var(--muted); font-size: .85rem; }
+  .time { text-align: right; font-variant-numeric: tabular-nums; }
+  .mins { font-size: 1.3rem; font-weight: 700; }
+  .delay { font-size: .85rem; color: var(--ok); }
+  .delay.late { color: var(--late); }
+  .msg { padding: 20px 16px; text-align: center; color: var(--muted); }
+  .err { color: var(--late); }
+  footer { margin-top: 16px; color: var(--muted); font-size: .8rem; }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1 id="stop">Fallrohrstraße</h1>
+      <div class="sub">Nächste 5 Abfahrten · Nürnberg</div>
+    </div>
+    <div class="clock" id="clock">--:--</div>
+  </header>
+
+  <ul id="list"><li class="msg" style="display:block">Lade Abfahrten …</li></ul>
+
+  <footer>
+    <span id="updated"></span> · Aktualisierung alle 30 s<br>
+    Daten: <a href="https://opendata.vag.de/dataset/api-echtzeitauskunft" target="_blank" rel="noopener">VAG Echtzeitauskunft (Open Data)</a>
+  </footer>
+</main>
+
+<script>
+  const API = "https://start.vag.de/dm/api/v1";
+  const STOP_QUERY = "Fallrohrstr";
+  const LIMIT = 5;
+  const REFRESH_MS = 30000;
+
+  const $ = (id) => document.getElementById(id);
+  const fmtTime = (d) => d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  let stopId = new URLSearchParams(location.search).get("id"); // optional: ?id=<VAGKennung>
+
+  async function getJson(url) {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
+  // Haltestelle per Name suchen und VAGKennung ermitteln
+  async function resolveStop() {
+    const data = await getJson(`${API}/haltestellen/VAG?name=${encodeURIComponent(STOP_QUERY)}`);
+    const stops = data.Haltestellen || [];
+    const stop = stops.find((s) => /^fallrohr/i.test(s.Haltestellenname)) || stops[0];
+    if (!stop) throw new Error("Haltestelle nicht gefunden");
+    $("stop").textContent = stop.Haltestellenname;
+    return stop.VAGKennung;
+  }
+
+  function render(departures) {
+    const list = $("list");
+    if (!departures.length) {
+      list.innerHTML = `<li class="msg" style="display:block">Aktuell keine Abfahrten.</li>`;
+      return;
+    }
+    const now = Date.now();
+    list.innerHTML = departures.map((a) => {
+      const soll = new Date(a.AbfahrtszeitSoll);
+      const ist = new Date(a.AbfahrtszeitIst || a.AbfahrtszeitSoll);
+      const mins = Math.max(0, Math.round((ist - now) / 60000));
+      const delay = Math.round((ist - soll) / 60000);
+      const delayTxt = a.Prognose === false || a.AbfahrtszeitIst == null
+        ? "Plan"
+        : delay > 0 ? `+${delay} min` : "pünktlich";
+      return `
+        <li>
+          <span class="line ${esc(a.Produkt)}">${esc(a.Linienname)}</span>
+          <div>
+            <div class="dir">${esc(a.Richtungstext)}</div>
+            <div class="meta">${fmtTime(soll)} · Steig ${esc(a.Haltepunkt)}</div>
+          </div>
+          <div class="time">
+            <div class="mins">${mins === 0 ? "jetzt" : mins + " min"}</div>
+            <div class="delay ${delay > 0 ? "late" : ""}">${delayTxt}</div>
+          </div>
+        </li>`;
+    }).join("");
+  }
+
+  async function update() {
+    try {
+      if (!stopId) stopId = await resolveStop();
+      const data = await getJson(`${API}/abfahrten/VAG/${encodeURIComponent(stopId)}?limitcount=${LIMIT}`);
+      const deps = (data.Abfahrten || [])
+        .sort((a, b) => new Date(a.AbfahrtszeitIst || a.AbfahrtszeitSoll) - new Date(b.AbfahrtszeitIst || b.AbfahrtszeitSoll))
+        .slice(0, LIMIT);
+      render(deps);
+      $("updated").textContent = `Stand ${fmtTime(new Date())}`;
+    } catch (e) {
+      $("list").innerHTML = `<li class="msg err" style="display:block">Abfahrten konnten nicht geladen werden (${esc(e.message)}).</li>`;
+    }
+  }
+
+  setInterval(() => ($("clock").textContent = fmtTime(new Date())), 1000);
+  $("clock").textContent = fmtTime(new Date());
+  update();
+  setInterval(update, REFRESH_MS);
+</script>
+</body>
+</html>
