@@ -265,6 +265,27 @@
     return 'NEXT';
   }
 
+  /**
+   * Vibrationsdauer in Millisekunden. Wichtig ist nur, dass man „falsch“ klar von „richtig“ unterscheiden kann:
+   * richtig = kurzes Antippen, falsch = ein deutlich längerer Brummer (ein einzelner langer Impuls ist
+   * zuverlässiger spürbar als eine Folge aus Impulsen mit Pause).
+   */
+  var VIBRATION = Object.freeze({
+    right: 30,
+    wrong: 300,
+    key: 8
+  });
+
+  /**
+   * Was passiert direkt nach einer Antwort?
+   * Richtig → ohne Umweg weiter ('NEXT') oder Ende ('FINISH').
+   * Falsch oder Zeit abgelaufen → erst die Rückmeldung mit der Rechnung ('FEEDBACK').
+   */
+  function afterAnswerStep(settings, answeredRounds, isCorrect) {
+    if (!isCorrect) return 'FEEDBACK';
+    return afterFeedbackEvent(settings, answeredRounds);
+  }
+
   // ---------------------------------------------------------------------------
   // Sitzung & Statistik
   // ---------------------------------------------------------------------------
@@ -475,6 +496,7 @@
       roundOf: 'Runde {i} vo {n}',
       roundEndless: 'Runde {i}',
       watch: 'Guad aufpassn …',
+      loading: 'Karten werdn gladn …',
       question: 'Wia vui Augn?',
       check: 'Schaug ma',
       delete: 'Löschn',
@@ -540,6 +562,7 @@
       roundOf: 'Runde {i} von {n}',
       roundEndless: 'Runde {i}',
       watch: 'Gut aufpassen …',
+      loading: 'Karten werden geladen …',
       question: 'Wie viele Augen?',
       check: 'Prüfen',
       delete: 'Löschen',
@@ -627,6 +650,8 @@
     transition: transition,
     canTransition: canTransition,
     afterFeedbackEvent: afterFeedbackEvent,
+    afterAnswerStep: afterAnswerStep,
+    VIBRATION: VIBRATION,
     createSession: createSession,
     recordAnswer: recordAnswer,
     summarizeSession: summarizeSession,

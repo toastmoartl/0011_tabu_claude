@@ -77,6 +77,15 @@
       '" draggable="false" data-card="' + card.suit + '-' + card.rank + '">';
   }
 
+  /** Notfall-Vorderseite aus Text, falls ein Kartenbild nicht geladen werden kann (Spiel bleibt spielbar). */
+  function renderFallback(card) {
+    assertKnown(card);
+    var label = SUIT_LABEL[card.suit] + '-' + RANK_LABEL[card.rank];
+    return '<div class="card-fallback" role="img" aria-label="' + label + '" data-card="' + card.suit + '-' + card.rank +
+      '" data-suit="' + card.suit + '"><span class="fb-rank">' + RANK_LABEL[card.rank] + '</span><span class="fb-suit">' +
+      SUIT_LABEL[card.suit] + '</span></div>';
+  }
+
   // ---------------------------------------------------------------------------
   // Rückseite (Rautenmuster, Eichel im Medaillon)
   // ---------------------------------------------------------------------------
@@ -128,6 +137,7 @@
     cardFile: cardFile,
     cardUrl: cardUrl,
     renderCard: renderCard,
+    renderFallback: renderFallback,
     renderBack: renderBack,
     renderMark: renderMark
   };

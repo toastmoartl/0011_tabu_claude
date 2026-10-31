@@ -344,6 +344,33 @@ test.describe('Zustandsmaschine', () => {
     assert.equal(L.afterFeedbackEvent({ gameMode: 'rounds', rounds: 3 }, 3), 'FINISH');
     assert.equal(L.afterFeedbackEvent({ gameMode: 'endless', rounds: 3 }, 300), 'NEXT');
   });
+
+  test('nach einer Antwort: richtig → sofort weiter, falsch oder Zeit abgelaufen → erst Rückmeldung', () => {
+    const rounds = { gameMode: 'rounds', rounds: 3 };
+    assert.equal(L.afterAnswerStep(rounds, 1, true), 'NEXT');
+    assert.equal(L.afterAnswerStep(rounds, 2, true), 'NEXT');
+    assert.equal(L.afterAnswerStep(rounds, 3, true), 'FINISH', 'letzte richtige Antwort beendet das Spiel direkt');
+    assert.equal(L.afterAnswerStep(rounds, 1, false), 'FEEDBACK');
+    assert.equal(L.afterAnswerStep(rounds, 3, false), 'FEEDBACK', 'auch in der letzten Runde zuerst die Rechnung zeigen');
+    const endless = { gameMode: 'endless', rounds: 1 };
+    assert.equal(L.afterAnswerStep(endless, 500, true), 'NEXT');
+    assert.equal(L.afterAnswerStep(endless, 500, false), 'FEEDBACK');
+  });
+
+  test('Vibration: falsch ist klar von richtig zu unterscheiden (deutlich länger)', () => {
+    const { right, wrong, key } = L.VIBRATION;
+    assert.ok(Number.isFinite(right) && Number.isFinite(wrong) && Number.isFinite(key), 'alle Muster sind einfache Zahlen (Millisekunden)');
+    assert.ok(right <= 60, 'richtig ist ein kurzes Antippen');
+    assert.ok(wrong >= 200, 'falsch ist lang genug, um sicher gespürt zu werden');
+    assert.ok(wrong <= 600, 'falsch ist nicht unangenehm lang');
+    assert.ok(wrong >= right * 5, 'falsch ist mindestens fünfmal so lang wie richtig – klar unterscheidbar');
+    assert.ok(key < right, 'Tastendruck ist das leiseste Signal');
+    assert.ok(Object.isFrozen(L.VIBRATION), 'Werte lassen sich nicht aus Versehen ändern');
+  });
+
+  test('jede Antwort-Entscheidung passt zur Zustandsmaschine (feedback → NEXT/FINISH ist erlaubt)', () => {
+    for (const step of ['NEXT', 'FINISH']) assert.ok(L.canTransition('feedback', step), step);
+  });
 });
 
 // ---------------------------------------------------------------------------
