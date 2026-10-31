@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Kleine Spiele für den Browser: Schafkopf-Augen zählen und Tabu.">
+<title>Spiele</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh; min-height: 100dvh; padding: 24px 16px; display: flex; justify-content: center;
+    font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif; color: #3a2412;
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(255,236,190,.3), transparent 60%),
+      repeating-linear-gradient(90deg, #b98a57 0 140px, #a9784a 140px 142px, #c69a66 142px 280px, #a9784a 280px 282px);
+  }
+  main { width: 100%; max-width: 560px; display: grid; gap: 16px; align-content: start; }
+  h1 {
+    text-align: center; color: #f4f1e8; background: #34403f; border: 8px solid #6b4423; border-radius: 10px;
+    padding: 14px; font-weight: 400; font-size: clamp(1.8rem, 7vw, 2.6rem); letter-spacing: .03em;
+    box-shadow: inset 0 0 18px rgba(0,0,0,.55), 0 6px 14px rgba(0,0,0,.35);
+  }
+  .game {
+    display: block; text-decoration: none; color: inherit; padding: 18px 20px; border-radius: 6px;
+    background: #f7f0dc; border: 1px solid #c9b27a; outline: 3px double #c9b27a; outline-offset: -8px;
+    box-shadow: 0 8px 18px rgba(0,0,0,.35);
+  }
+  .game:hover, .game:focus-visible { transform: translateY(-2px); box-shadow: 0 12px 22px rgba(0,0,0,.4); }
+  .game:focus-visible { outline: 3px solid #d9a63a; outline-offset: 2px; }
+  .game h2 { font-size: 1.4rem; margin-bottom: 4px; }
+  .game p { color: #7a6143; font-size: .98rem; }
+  .download {
+    text-align: center; color: #f4f1e8; text-shadow: 0 1px 3px rgba(0,0,0,.6); font-size: .98rem;
+  }
+  .download a { color: #fff3c4; }
+  @media (prefers-reduced-motion: reduce) { .game:hover { transform: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Spiele</h1>
+  <a class="game" href="schafkopf/">
+    <h2>Augn zähln – Schafkopf-Trainer</h2>
+    <p>Vier Karten vom kurzen Blatt werden kurz aufgedeckt – wie viele Augen waren es? Mit Statistik und einstellbarer Zeit.</p>
+  </a>
+  <a class="game" href="tabu/">
+    <h2>Tabu</h2>
+    <p>Begriffe erklären, ohne die verbotenen Wörter zu sagen.</p>
+  </a>
+  <p class="download">Schafkopf-Trainer zum Mitnehmen: <a href="schafkopf.zip" download>schafkopf.zip</a> (entpacken, <code>index.html</code> öffnen)</p>
+</main>
+</body>
+</html>

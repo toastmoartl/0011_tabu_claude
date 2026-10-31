@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="900" viewBox="0 0 600 900">
+<title>Sau Eichel – Bayerisches Schafkopfblatt</title>
+<desc>Eigenständige, editierbare Vektorillustration einer Schafkopf-Spielkarte im bayerisch inspirierten Stil.</desc>
+<rect x="12" y="12" width="576" height="876" rx="34" fill="#f5edda" stroke="#3b3025" stroke-width="12"/>
+<rect x="30" y="30" width="540" height="840" rx="25" fill="none" stroke="#a78e61" stroke-width="3"/>
+<g font-family="Georgia,serif" fill="#2e2921">
+<text x="62" y="112" font-size="54" font-weight="bold">A</text>
+<text x="62" y="158" font-size="23">EICHEL</text>
+<g transform="translate(0,0)"><path d="M67.4 205.68 Q67.4 190.2 80 189.84 Q92.6 190.2 92.6 205.68 Q99.44 218.64 80 226.92 Q60.56 218.64 67.4 205.68Z" fill="#263f2d" stroke="#30291f" stroke-width="0.72"/><path d="M65.6 205.68 Q80 197.4 94.4 205.68 L92.6 209.64 Q80 203.16 67.4 209.64Z" fill="#a58a4e" stroke="#30291f" stroke-width="0.72"/><path d="M80 190.2 q-0.72 -5.3999999999999995 4.68 -6.84" fill="none" stroke="#30291f" stroke-width="1.44"/></g>
+<text x="538" y="788" font-size="54" font-weight="bold" text-anchor="end" transform="rotate(180 538 788)">A</text>
+<text x="538" y="742" font-size="23" text-anchor="end" transform="rotate(180 538 742)">EICHEL</text>
+</g>
+<rect x="105" y="185" width="390" height="540" rx="18" fill="#eee2c7" stroke="#c0aa7d" stroke-width="3"/>
+<g>
+        <path d="M170 470 Q165 365 280 350 Q395 360 410 465 Q395 560 290 570 Q185 560 170 470Z" fill="#d5b68a" stroke="#342c21" stroke-width="8"/>
+        <path d="M205 390 L185 325 L250 360 M365 390 L395 325 L330 360" fill="#a95c42" stroke="#342c21" stroke-width="7"/>
+        <ellipse cx="290" cy="465" rx="90" ry="58" fill="#bd8c68" stroke="#342c21" stroke-width="6"/>
+        <ellipse cx="290" cy="485" rx="48" ry="29" fill="#ead8b8" stroke="#342c21" stroke-width="5"/>
+        <circle cx="260" cy="450" r="8" fill="#342c21"/><circle cx="320" cy="450" r="8" fill="#342c21"/>
+        <path d="M240 510 Q220 545 250 550 M340 510 Q360 545 330 550" fill="none" stroke="#f4e8cf" stroke-width="10"/>
+        <path d="M270.75 618.4 Q270.75 594.75 290 594.2 Q309.25 594.75 309.25 618.4 Q319.7 638.2 290 650.85 Q260.3 638.2 270.75 618.4Z" fill="#263f2d" stroke="#30291f" stroke-width="1.1"/><path d="M268.0 618.4 Q290 605.75 312.0 618.4 L309.25 624.45 Q290 614.55 270.75 624.45Z" fill="#a58a4e" stroke="#30291f" stroke-width="1.1"/><path d="M290 594.75 q-1.1 -8.25 7.15 -10.450000000000001" fill="none" stroke="#30291f" stroke-width="2.2"/>
+        </g>
+<path d="M135 750 Q300 775 465 750" fill="none" stroke="#a78e61" stroke-width="3"/>
+<text x="300" y="817" text-anchor="middle" font-family="Georgia,serif" font-size="22" letter-spacing="4" fill="#66543a">BAYERISCHES BLATT</text>
+</svg>

@@ -1,0 +1,17 @@
+{
+  "name": "schafkopf-augen-trainer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Schafkopf-Trainer: Augen zählen üben (kurzes Blatt)",
+  "scripts": {
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "node --test --experimental-test-coverage --test-coverage-include=js/logic.js --test-coverage-include=js/cards.js --test-coverage-lines=95 --test-coverage-branches=90 --test-coverage-functions=95 tests/unit/*.test.js",
+    "test:e2e": "node --test --test-concurrency=1 tests/e2e/*.test.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.50.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
