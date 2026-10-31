@@ -389,18 +389,20 @@
 
   /* „Richtig!“ ohne eigenen Bildschirm: grünes Aufblitzen am Spieltisch + Serienzähler pulsiert */
   .table { position: relative; }
-  .table.flash-ok::after {
+  .table.flash-ok::after, .table.flash-bad::after {
     content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-    box-shadow: inset 0 0 56px 10px rgba(160, 255, 120, .8); animation: ok-flash .6s ease-out forwards;
+    animation: ok-flash .6s ease-out forwards;
   }
+  .table.flash-ok::after { box-shadow: inset 0 0 56px 10px rgba(160, 255, 120, .8); }
+  .table.flash-bad::after { box-shadow: inset 0 0 56px 10px rgba(255, 90, 70, .9); }
   @keyframes ok-flash { from { opacity: 1; } to { opacity: 0; } }
   #streak-label.pulse { display: inline-block; animation: streak-pulse .5s ease-out; color: #c6ff9f; }
   @keyframes streak-pulse { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
 
   @media (prefers-reduced-motion: reduce) {
     .card-inner, .btn, .coaster, .switch, .switch::after { transition: none !important; }
-    .shake, .table.flash-ok::after, #streak-label.pulse { animation: none; }
-    .table.flash-ok::after { opacity: 0; }
+    .shake, .table.flash-ok::after, .table.flash-bad::after, #streak-label.pulse { animation: none; }
+    .table.flash-ok::after, .table.flash-bad::after { opacity: 0; }
   }
 </style>
 </head>

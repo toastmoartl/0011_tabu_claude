@@ -23,8 +23,12 @@ test.after(async () => { if (browser) await browser.close(); });
  * Öffnet die App mit vorbelegtem Speicher. Sammelt JS-Fehler, die am Ende
  * jedes Tests geprüft werden.
  */
-async function open(t, { settings = {}, store = null, raw = null, empty = false, seed = 1, viewport, colorScheme, reducedMotion = 'reduce' } = {}) {
+async function open(t, { settings = {}, store = null, raw = null, empty = false, seed = 1, viewport, colorScheme, reducedMotion = 'reduce', recordVibration = false } = {}) {
   const context = await browser.newContext({ viewport: viewport || { width: 1000, height: 900 }, colorScheme, reducedMotion });
+  if (recordVibration) {
+    // navigator.vibrate durch eine Aufzeichnung ersetzen, damit man die Muster prüfen kann
+    await context.addInitScript(() => { window.__vib = []; navigator.vibrate = (p) => { window.__vib.push(p); return true; }; });
+  }
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -88,6 +92,8 @@ const watchFeedback = (page) => page.evaluate(() => {
   new MutationObserver(() => { if (!el.hidden) window.__feedbackShown = true; }).observe(el, { attributes: true, attributeFilter: ['hidden'] });
 });
 const feedbackShown = (page) => page.evaluate(() => window.__feedbackShown);
+const vibrations = (page) => page.evaluate(() => window.__vib);
+const flashClasses = (page) => page.evaluate(() => ['flash-ok', 'flash-bad'].filter((c) => document.querySelector('.table').classList.contains(c)));
 
 // ---------------------------------------------------------------------------
 test.describe('Start & Darstellung', () => {
@@ -495,6 +501,66 @@ test.describe('Spielablauf', () => {
     await page.click('#next-btn');
     await waitPhase(page, 'reveal');
     assert.equal(await page.textContent('#round-label'), 'Runde 3 vo 3');
+  });
+
+  test('Aufblitzen: richtig = grün, falsch = rot, abgelaufene Zeit = rot; danach verschwindet es wieder', async (t) => {
+    const page = await open(t, { settings: { rounds: 4, answerLimitEnabled: true, answerLimitSeconds: 2 } });
+    await page.click('#start-btn');
+    await playChoiceRound(page);
+    assert.deepEqual(await flashClasses(page), ['flash-ok'], 'richtig: nur grün');
+    await page.waitForFunction(() => document.querySelector('.table').className.indexOf('flash') < 0, null, { timeout: 3000 });
+    await playChoiceRound(page, { wrong: true });
+    assert.deepEqual(await flashClasses(page), ['flash-bad'], 'falsch: nur rot');
+    assert.equal(await phase(page), 'feedback', 'rotes Aufblitzen und Rückmeldung zusammen');
+    await page.waitForFunction(() => document.querySelector('.table').className.indexOf('flash') < 0, null, { timeout: 3000 });
+    await page.click('#next-btn');
+    await waitPhase(page, 'answer');
+    await waitPhase(page, 'feedback'); // Zeit läuft ab
+    assert.deepEqual(await flashClasses(page), ['flash-bad'], 'abgelaufene Zeit zählt als falsch: rot');
+  });
+
+  test('Aufblitzen: schnelle Folge richtig → falsch zeigt nur die aktuelle Farbe', async (t) => {
+    const page = await open(t, { settings: { rounds: 3, displaySeconds: 0.5 } });
+    await page.click('#start-btn');
+    await playChoiceRound(page);
+    await playChoiceRound(page, { wrong: true });
+    const now = await flashClasses(page);
+    assert.deepEqual(now, ['flash-bad'], 'grün und rot nie gleichzeitig');
+  });
+
+  test('Vibration: richtig = ein kurzer Impuls, falsch = zwei deutlich getrennte Impulse', async (t) => {
+    const page = await open(t, { recordVibration: true, settings: { vibration: true, rounds: 4 } });
+    await page.click('#start-btn');
+    await playChoiceRound(page);
+    assert.deepEqual(await vibrations(page), [L.VIBRATION.right], 'richtig: ein kurzer Impuls');
+    await playChoiceRound(page, { wrong: true });
+    assert.deepEqual(await vibrations(page), [L.VIBRATION.right, [100, 110, 100]], 'falsch: zwei Impulse mit Pause');
+    assert.deepEqual((await vibrations(page))[1], [...L.VIBRATION.wrong]);
+  });
+
+  test('Vibration: abgelaufene Zeit vibriert doppelt wie eine falsche Antwort', async (t) => {
+    const page = await open(t, { recordVibration: true, settings: { vibration: true, answerLimitEnabled: true, answerLimitSeconds: 2 } });
+    await page.click('#start-btn');
+    await waitPhase(page, 'feedback');
+    assert.deepEqual(await vibrations(page), [[...L.VIBRATION.wrong]]);
+  });
+
+  test('Vibration aus: gar keine Vibration, auch nicht beim Ziffernblock', async (t) => {
+    const page = await open(t, { recordVibration: true, settings: { vibration: false, inputMode: 'number', rounds: 3 } });
+    await page.click('#start-btn');
+    await waitPhase(page, 'answer');
+    await page.click('.key[data-key="1"]');
+    await playNumberRound(page, { wrong: true });
+    assert.deepEqual(await vibrations(page), []);
+  });
+
+  test('Vibration: Ziffernblock gibt bei jedem Tastendruck einen ganz leichten Impuls', async (t) => {
+    const page = await open(t, { recordVibration: true, settings: { vibration: true, inputMode: 'number' } });
+    await page.click('#start-btn');
+    await waitPhase(page, 'answer');
+    await page.click('.key[data-key="4"]');
+    await page.click('.key[data-key="2"]');
+    assert.deepEqual(await vibrations(page), [L.VIBRATION.key, L.VIBRATION.key]);
   });
 
   test('letzte Runde: richtig → direkt Auswertung; falsch → erst die Rechnung, dann Auswertung', async (t) => {

@@ -266,6 +266,17 @@
   }
 
   /**
+   * Vibrationsmuster in Millisekunden (Vibrieren/Pause/Vibrieren …).
+   * Richtig: ein kurzer Impuls. Falsch: zwei deutlich getrennte, längere Impulse –
+   * die Pause muss lang genug sein, sonst fühlen sich beide wie ein einziger Stoß an.
+   */
+  var VIBRATION = Object.freeze({
+    right: 30,
+    wrong: Object.freeze([100, 110, 100]),
+    key: 8
+  });
+
+  /**
    * Was passiert direkt nach einer Antwort?
    * Richtig → ohne Umweg weiter ('NEXT') oder Ende ('FINISH').
    * Falsch oder Zeit abgelaufen → erst die Rückmeldung mit der Rechnung ('FEEDBACK').
@@ -638,6 +649,7 @@
     canTransition: canTransition,
     afterFeedbackEvent: afterFeedbackEvent,
     afterAnswerStep: afterAnswerStep,
+    VIBRATION: VIBRATION,
     createSession: createSession,
     recordAnswer: recordAnswer,
     summarizeSession: summarizeSession,

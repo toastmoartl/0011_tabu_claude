@@ -410,26 +410,32 @@
       return;
     }
     playCorrect();
-    vibrate(30);
+    vibrate(L.VIBRATION.right);
     $('#sr-status').textContent = tr('correct');
     if (step === 'FINISH') {
       finishSession('FINISH');
       return;
     }
     startRound();
-    flashOk();
+    flash('ok');
   }
 
-  /** Kurzes grünes Aufblitzen + Serienzähler, damit man auch ohne Rückmeldung-Bildschirm sieht: richtig! */
-  function flashOk() {
+  /**
+   * Kurzes Aufblitzen am Spieltisch: grün bei richtig (dazu pulsiert der Serienzähler,
+   * weil es keinen eigenen Rückmeldung-Bildschirm gibt), rot bei falsch oder abgelaufener Zeit.
+   */
+  var flashTimer = null;
+  function flash(kind) {
     var table = $('.table');
     var streak = $('#streak-label');
-    [table, streak].forEach(function (el) { el.classList.remove('flash-ok', 'pulse'); });
+    table.classList.remove('flash-ok', 'flash-bad');
+    streak.classList.remove('pulse');
     void table.offsetWidth; // Animation neu starten
-    table.classList.add('flash-ok');
-    streak.classList.add('pulse');
-    window.setTimeout(function () {
-      table.classList.remove('flash-ok');
+    table.classList.add(kind === 'ok' ? 'flash-ok' : 'flash-bad');
+    if (kind === 'ok') streak.classList.add('pulse');
+    window.clearTimeout(flashTimer);
+    flashTimer = window.setTimeout(function () {
+      table.classList.remove('flash-ok', 'flash-bad');
       streak.classList.remove('pulse');
     }, 700);
   }
@@ -458,7 +464,7 @@
     setBar(0, 'idle');
     nextBtn.focus();
 
-    if (record.isCorrect) { playCorrect(); vibrate(30); } else { playWrong(); vibrate([90, 60, 90]); }
+    if (record.isCorrect) { playCorrect(); vibrate(L.VIBRATION.right); } else { playWrong(); vibrate(L.VIBRATION.wrong.slice()); flash('bad'); }
   }
 
   function onNext() {
@@ -569,7 +575,7 @@
       var k = key.dataset.key;
       if (k === 'del') input.value = input.value.slice(0, -1);
       else if (input.value.length < input.maxLength) input.value += k;
-      vibrate(8);
+      vibrate(L.VIBRATION.key);
     });
 
     $('#number-form').addEventListener('submit', function (e) {

@@ -30,6 +30,10 @@ Tastatur: `1`–`4` wählt eine Antwort, `Enter` geht weiter.
 Antwort** oder wenn die **Zeit abläuft** erscheint die Rückmeldung mit der Rechnung
 (`11 + 10 + 3 + 0 = 24`). Die letzte richtige Antwort führt direkt zur Auswertung.
 
+**Rückmeldung am Handy:** Richtig = ein kurzer Vibrationsimpuls und grünes Aufblitzen. Falsch (oder Zeit
+abgelaufen) = zwei deutlich getrennte Impulse (100 ms – 110 ms Pause – 100 ms) und rotes Aufblitzen.
+Die Muster stehen als `VIBRATION` in `js/logic.js`; Vibration lässt sich in den Einstellungen ausschalten.
+
 ## Bildschirmgrößen
 
 Das Spiel ist für Handys im Hochformat gebaut, vor allem das Samsung Galaxy S23 (360×780 CSS-Pixel,
