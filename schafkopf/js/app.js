@@ -213,14 +213,23 @@
         return '<div class="field field-toggle" data-field="' + f.key + '"' + hidden + '><label for="' + id + '">' + escapeHtml(tr(f.label)) + '</label>' +
           '<input type="checkbox" role="switch" class="switch" id="' + id + '" name="' + f.key + '"' + (s[f.key] ? ' checked' : '') + '></div>';
       }
-      control = '<div class="segment" role="radiogroup" aria-label="' + escapeHtml(tr(f.label)) + '">' + f.options.map(function (o) {
+      control = '<div class="segment" role="radiogroup" aria-labelledby="lbl-' + f.key + '">' + f.options.map(function (o) {
         var oid = id + '-' + o[0];
         return '<input type="radio" id="' + oid + '" name="' + f.key + '" value="' + o[0] + '"' + (s[f.key] === o[0] ? ' checked' : '') + '>' +
           '<label for="' + oid + '">' + escapeHtml(tr(o[1])) + '</label>';
       }).join('') + '</div>';
-      return '<fieldset class="field" data-field="' + f.key + '"' + hidden + '><legend>' + escapeHtml(tr(f.label)) + '</legend>' + control + '</fieldset>';
+      return '<div class="field" data-field="' + f.key + '"' + hidden + '><span class="field-label" id="lbl-' + f.key + '">' + escapeHtml(tr(f.label)) + '</span>' + control + '</div>';
     }).join('');
     $('#settings-form').innerHTML = html;
+    updateRowCount();
+  }
+
+  /** Die Einstellungszeilen teilen sich die Höhe – dafür muss das CSS wissen, wie viele gerade sichtbar sind. */
+  function updateRowCount() {
+    var form = $('#settings-form');
+    var visible = $all('.field', form).filter(function (el) { return !el.hidden; }).length;
+    form.style.setProperty('--rows', visible);
+    form.style.setProperty('--rows2', Math.ceil(visible / 2));
   }
 
   function readField(target) {
@@ -258,6 +267,7 @@
       var el = $('[data-field="' + fd.key + '"]');
       if (el) el.hidden = !fd.showIf(settings());
     });
+    updateRowCount();
   }
 
   function applyTheme() {
@@ -268,6 +278,7 @@
     document.documentElement.lang = settings().language === 'bairisch' ? 'bar' : 'de';
     document.title = tr('title') + ' · Schafkopf';
     $all('[data-t]').forEach(function (el) { el.textContent = tr(el.dataset.t); });
+    $all('[data-t-aria]').forEach(function (el) { el.setAttribute('aria-label', tr(el.dataset.tAria)); });
     $('#number-input').placeholder = tr('placeholder');
   }
 
@@ -369,7 +380,7 @@
       var input = $('#number-input');
       input.value = '';
       input.classList.remove('shake');
-      input.focus();
+      input.focus({ preventScroll: true });
     }
     state.answerStartedAt = performance.now();
     if (s.answerLimitEnabled) {
@@ -520,6 +531,16 @@
     $('#choices').addEventListener('click', function (e) {
       var btn = e.target.closest('button[data-value]');
       if (btn) submitAnswer(Number(btn.dataset.value), false);
+    });
+
+    $('.keypad').addEventListener('click', function (e) {
+      var key = e.target.closest('button[data-key]');
+      if (!key || state.phase !== 'answer') return;
+      var input = $('#number-input');
+      var k = key.dataset.key;
+      if (k === 'del') input.value = input.value.slice(0, -1);
+      else if (input.value.length < input.maxLength) input.value += k;
+      vibrate(8);
     });
 
     $('#number-form').addEventListener('submit', function (e) {

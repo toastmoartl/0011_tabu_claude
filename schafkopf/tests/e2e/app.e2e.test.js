@@ -183,11 +183,22 @@ test.describe('Start & Darstellung', () => {
     m.cards.forEach((c) => { assert.ok(c.l >= 0 && c.r <= m.inner, JSON.stringify(c)); assert.ok(c.w >= 90, `Karte zu klein: ${c.w}`); });
   });
 
-  test('Desktop: vier Karten nebeneinander', async (t) => {
-    const page = await open(t, { viewport: { width: 1200, height: 900 }, settings: { displaySeconds: 5 } });
+  test('Laptop (breite Kartenfläche): vier Karten nebeneinander', async (t) => {
+    const page = await open(t, { viewport: { width: 1280, height: 640 }, settings: { displaySeconds: 5 } });
     await page.click('#start-btn');
+    await page.waitForSelector('#hand .card.up');
     const tops = await page.$$eval('#hand .card', (els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
     assert.equal(new Set(tops).size, 1);
+  });
+
+  test('Hochformat (Handy): zwei mal zwei, so groß wie der Platz erlaubt', async (t) => {
+    const page = await open(t, { viewport: { width: 360, height: 680 }, settings: { displaySeconds: 5 } });
+    await page.click('#start-btn');
+    await page.waitForSelector('#hand .card.up');
+    const r = await page.$$eval('#hand .card', (els) => els.map((e) => { const b = e.getBoundingClientRect(); return { top: Math.round(b.top), left: Math.round(b.left), w: Math.round(b.width) }; }));
+    assert.equal(new Set(r.map((c) => c.top)).size, 2, 'zwei Zeilen');
+    assert.equal(new Set(r.map((c) => c.left)).size, 2, 'zwei Spalten');
+    assert.ok(r[0].w >= 140, `Karten zu klein: ${r[0].w}px`);
   });
 });
 
@@ -318,6 +329,43 @@ test.describe('Spielablauf', () => {
     assert.equal(await page.textContent('#verdict'), 'Passt!');
   });
 
+  test('Ziffernblock: Eingabe, Löschen, höchstens zwei Stellen, Prüfen – ohne Handy-Tastatur', async (t) => {
+    const page = await open(t, { settings: { inputMode: 'number', rounds: 1 } });
+    await page.click('#start-btn');
+    await waitPhase(page, 'answer');
+    assert.equal(await page.getAttribute('#number-input', 'inputmode'), 'none', 'keine Bildschirmtastatur');
+    assert.equal(await page.locator('.keypad .key').count(), 12);
+    const val = () => page.inputValue('#number-input');
+    await page.click('.key[data-key="1"]');
+    await page.click('.key[data-key="7"]');
+    assert.equal(await val(), '17');
+    await page.click('.key[data-key="3"]');
+    assert.equal(await val(), '17', 'dritte Ziffer wird ignoriert');
+    await page.click('.key[data-key="del"]');
+    assert.equal(await val(), '1');
+    await page.click('.key[data-key="del"]');
+    await page.click('.key[data-key="del"]');
+    assert.equal(await val(), '', 'Löschen im leeren Feld ist harmlos');
+    await page.click('#check-btn');
+    assert.equal(await phase(page), 'answer', 'leere Eingabe wird nicht gewertet');
+    assert.ok(await page.evaluate(() => document.getElementById('number-input').classList.contains('shake')));
+    // richtige Summe nur über den Ziffernblock tippen
+    const sum = await handSum(page);
+    for (const d of String(sum)) await page.click(`.key[data-key="${d}"]`);
+    await page.click('#check-btn');
+    await waitPhase(page, 'feedback');
+    assert.equal(await page.textContent('#verdict'), 'Passt!');
+  });
+
+  test('Ziffernblock: Tasten sind für Screenreader beschriftet (in beiden Sprachen)', async (t) => {
+    const page = await open(t, { settings: { inputMode: 'number', language: 'hochdeutsch' } });
+    assert.equal(await page.getAttribute('#check-btn', 'aria-label'), 'Prüfen');
+    assert.equal(await page.getAttribute('.key[data-key="del"]', 'aria-label'), 'Löschen');
+    await page.click('label[for="set-language-bairisch"]');
+    assert.equal(await page.getAttribute('#check-btn', 'aria-label'), 'Schaug ma');
+    assert.equal(await page.getAttribute('.key[data-key="del"]', 'aria-label'), 'Löschn');
+  });
+
   test('ungültige Zahl wird nicht gewertet', async (t) => {
     const page = await open(t, { settings: { inputMode: 'number' } });
     await page.click('#start-btn');
@@ -444,6 +492,20 @@ test.describe('Einstellungen', () => {
     assert.equal(await visible('answerLimitSeconds'), false);
     await page.click('#set-answerLimitEnabled');
     assert.equal(await visible('answerLimitSeconds'), true);
+  });
+
+  test('Layout kennt die Zahl der sichtbaren Einstellungszeilen (damit sie die Höhe teilen)', async (t) => {
+    const page = await open(t);
+    const rows = () => page.evaluate(() => { const f = document.getElementById('settings-form'); return [f.style.getPropertyValue('--rows'), f.style.getPropertyValue('--rows2')]; });
+    assert.deepEqual(await rows(), ['11', '6']);
+    await page.click('label[for="set-revealMode-sequential"]');
+    assert.deepEqual(await rows(), ['12', '6']);
+    await page.click('#set-answerLimitEnabled');
+    assert.deepEqual(await rows(), ['13', '7']);
+    await page.click('label[for="set-gameMode-endless"]');
+    assert.deepEqual(await rows(), ['12', '6']);
+    await page.click('label[for="set-language-hochdeutsch"]');
+    assert.deepEqual(await rows(), ['12', '6'], 'bleibt nach Sprachwechsel erhalten');
   });
 
   test('Sprache umschalten: alles auf Hochdeutsch', async (t) => {
