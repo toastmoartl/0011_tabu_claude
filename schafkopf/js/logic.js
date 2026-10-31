@@ -98,6 +98,144 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Realistische Stiche (Sauspiel): ein echtes Spiel mit den Regeln durchspielen
+  // ---------------------------------------------------------------------------
+  // Trumpf im Sauspiel: alle 4 Ober, alle 4 Unter und die Herz-Karten. Im kurzen Blatt sind das
+  // 12 von 24 Karten. Stärke der Trümpfe (stärkste zuerst):
+  var TRUMP_ORDER = ['eichel-ober', 'gras-ober', 'herz-ober', 'schellen-ober',
+    'eichel-unter', 'gras-unter', 'herz-unter', 'schellen-unter',
+    'herz-sau', 'herz-zehn', 'herz-koenig', 'herz-neun'];
+  // Stärke der Farbkarten (stärkste zuerst):
+  var PLAIN_ORDER = ['sau', 'zehn', 'koenig', 'neun'];
+  var PLAYERS = 4;
+  var HAND_CARDS = 6;                       // 24 Karten : 4 Spieler
+  var TRICKS_PER_GAME = 6;
+
+  function isTrump(card) {
+    return card.rank === 'ober' || card.rank === 'unter' || card.suit === 'herz';
+  }
+
+  /** „Farbe“ im Sinne des Zwangs: alle Trümpfe zählen als eine Farbe, sonst die Kartenfarbe. */
+  function playSuit(card) {
+    return isTrump(card) ? 'trumpf' : card.suit;
+  }
+
+  function trumpStrength(card) { return TRUMP_ORDER.length - TRUMP_ORDER.indexOf(card.id); }
+  function plainStrength(card) { return PLAIN_ORDER.length - PLAIN_ORDER.indexOf(card.rank); }
+
+  /** Welche Karten darf man auf die ausgespielte Karte legen? Bedienen ist Pflicht, sonst ist alles erlaubt. */
+  function legalCards(hand, ledCard) {
+    var led = playSuit(ledCard);
+    var follow = hand.filter(function (c) { return playSuit(c) === led; });
+    return follow.length ? follow : hand.slice();
+  }
+
+  function beats(card, best, led) {
+    if (isTrump(card)) return !isTrump(best) || trumpStrength(card) > trumpStrength(best);
+    if (isTrump(best)) return false;
+    return playSuit(card) === led && playSuit(best) === led && plainStrength(card) > plainStrength(best);
+  }
+
+  /** Index (in Spielreihenfolge) der Karte, die den Stich holt. cards[0] ist die ausgespielte Karte. */
+  function trickWinnerIndex(cards) {
+    var led = playSuit(cards[0]);
+    var best = 0;
+    for (var i = 1; i < cards.length; i++) if (beats(cards[i], cards[best], led)) best = i;
+    return best;
+  }
+
+  function dealHands(rng) {
+    var deck = shuffle(createDeck(), rng || Math.random);
+    var hands = [];
+    for (var p = 0; p < PLAYERS; p++) hands.push(deck.slice(p * HAND_CARDS, (p + 1) * HAND_CARDS));
+    return hands;
+  }
+
+  /**
+   * Spielt die ersten `count` Stiche eines Spiels mit zufälligen, aber regelgerechten Zügen
+   * (Farb-/Trumpfzwang; der Stichgewinner spielt aus). Liefert je Stich die Züge in Spielreihenfolge.
+   */
+  function simulateTricks(rng, count) {
+    rng = rng || Math.random;
+    var hands = dealHands(rng);
+    var leader = Math.floor(rng() * PLAYERS);
+    var tricks = [];
+    for (var t = 0; t < count; t++) {
+      var plays = [];
+      for (var k = 0; k < PLAYERS; k++) {
+        var player = (leader + k) % PLAYERS;
+        var hand = hands[player];
+        // Bedienpflicht gilt nur, wenn man die ausgespielte „Farbe“ (oder Trumpf) wirklich auf der Hand hat
+        var mustFollow = k > 0 && hand.some(function (c) { return playSuit(c) === playSuit(plays[0].card); });
+        var options = k === 0 ? hand : legalCards(hand, plays[0].card);
+        var card = options[Math.floor(rng() * options.length)];
+        hand.splice(hand.indexOf(card), 1);
+        plays.push({ player: player, card: card, mustFollow: mustFollow });
+      }
+      var winner = trickWinnerIndex(plays.map(function (p) { return p.card; }));
+      leader = plays[winner].player;
+      tricks.push({ plays: plays, winner: winner });
+    }
+    return tricks;
+  }
+
+  /** Ein zufälliger Stich aus einem zufälligen Zeitpunkt (1. bis 6. Stich) eines Spiels. */
+  function randomStich(rng) {
+    rng = rng || Math.random;
+    var index = Math.floor(rng() * TRICKS_PER_GAME);
+    return simulateTricks(rng, index + 1)[index].plays.map(function (p) { return p.card; });
+  }
+
+  /**
+   * Realistischer Stich. Mit `weights` (Karten-Gewichte, z. B. Schwachstellen) werden mehrere realistische
+   * Stiche gebildet und einer davon passend zum durchschnittlichen Gewicht gewählt – so bleibt jeder Stich
+   * regelgerecht, und Schwachstellen kommen trotzdem häufiger dran.
+   */
+  function drawRealisticStich(rng, weights, candidates) {
+    rng = rng || Math.random;
+    if (!weights) return randomStich(rng);
+    var n = candidates || 8;
+    var list = [];
+    var total = 0;
+    for (var i = 0; i < n; i++) {
+      var stich = randomStich(rng);
+      var w = stich.reduce(function (sum, c) {
+        var x = Number(weights[c.id]);
+        return sum + (isFinite(x) && x > 0 ? x : 1);
+      }, 0) / stich.length;
+      list.push({ stich: stich, weight: w });
+      total += w;
+    }
+    var r = rng() * total;
+    var pick = 0;
+    while (pick < list.length - 1 && r >= list[pick].weight) { r -= list[pick].weight; pick++; }
+    return list[pick].stich;
+  }
+
+  /** Beschreibt einen Stich: Zahl der Trümpfe, größte Gruppe gleicher Farbkarten und eine Art. */
+  function stichProfile(cards) {
+    var trumps = cards.filter(isTrump).length;
+    var bySuit = {};
+    cards.forEach(function (c) { if (!isTrump(c)) bySuit[c.suit] = (bySuit[c.suit] || 0) + 1; });
+    var maxSameSuit = Object.keys(bySuit).reduce(function (m, k) { return Math.max(m, bySuit[k]); }, 0);
+    var kind = 'gemischt';
+    if (trumps === 4) kind = 'trumpf4';
+    else if (trumps === 3) kind = 'trumpf3+farbe';
+    else if (trumps === 0 && maxSameSuit === 4) kind = 'farbe4';
+    else if (trumps === 1 && maxSameSuit === 3) kind = 'farbe3+trumpf';
+    else if (trumps === 0 && maxSameSuit === 3) kind = 'farbe3+andere';
+    return { trumps: trumps, maxSameSuit: maxSameSuit, kind: kind };
+  }
+
+  /** Die Karten für die nächste Runde – realistischer Stich oder reiner Zufall, je nach Einstellung. */
+  function nextHand(settings, rng, cardStats) {
+    var s = sanitizeSettings(settings);
+    var weights = s.adaptive ? cardWeights(cardStats) : null;
+    if (s.realisticTricks) return drawRealisticStich(rng, weights);
+    return drawCards(createDeck(), HAND_SIZE, rng, weights);
+  }
+
+  // ---------------------------------------------------------------------------
   // Mögliche Summen & Antwort-Optionen („knapp daneben“)
   // ---------------------------------------------------------------------------
   var achievableCache = null;
@@ -186,7 +324,8 @@
     vibration: true,
     theme: 'auto',               // 'auto' | 'light' | 'dark'
     language: 'bairisch',        // 'bairisch' | 'hochdeutsch'
-    adaptive: true
+    adaptive: true,
+    realisticTricks: true
   });
 
   var LIMITS = Object.freeze({
@@ -492,6 +631,7 @@
       langBairisch: 'Boarisch',
       langHochdeutsch: 'Hochdeutsch',
       adaptive: 'Schwachstelln öfter übn',
+      realistic: 'Echte Stich',
       seconds: '{n} s',
       roundOf: 'Runde {i} vo {n}',
       roundEndless: 'Runde {i}',
@@ -558,6 +698,7 @@
       langBairisch: 'Bairisch',
       langHochdeutsch: 'Hochdeutsch',
       adaptive: 'Schwachstellen öfter üben',
+      realistic: 'Realistische Stiche',
       seconds: '{n} s',
       roundOf: 'Runde {i} von {n}',
       roundEndless: 'Runde {i}',
@@ -635,6 +776,18 @@
     createRng: createRng,
     shuffle: shuffle,
     drawCards: drawCards,
+    TRUMP_ORDER: TRUMP_ORDER,
+    PLAIN_ORDER: PLAIN_ORDER,
+    isTrump: isTrump,
+    playSuit: playSuit,
+    legalCards: legalCards,
+    trickWinnerIndex: trickWinnerIndex,
+    dealHands: dealHands,
+    simulateTricks: simulateTricks,
+    randomStich: randomStich,
+    drawRealisticStich: drawRealisticStich,
+    stichProfile: stichProfile,
+    nextHand: nextHand,
     achievableSums: achievableSums,
     isAchievable: isAchievable,
     typicalErrorOffsets: typicalErrorOffsets,

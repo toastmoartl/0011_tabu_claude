@@ -103,7 +103,7 @@ test.describe('Start & Darstellung', () => {
     assert.equal(await page.textContent('h1'), 'Augn zähln');
     assert.equal(await page.textContent('#start-btn'), 'Auf geht’s!');
     assert.equal(await page.getAttribute('html', 'lang'), 'bar');
-    assert.equal(await page.locator('#settings-form .field').count(), 13);
+    assert.equal(await page.locator('#settings-form .field').count(), 14);
     assert.ok(await page.isVisible('#screen-setup'));
     assert.ok(!(await page.isVisible('#screen-play')));
   });
@@ -588,16 +588,52 @@ test.describe('Spielablauf', () => {
     await b.click('#start-btn');
     const ha = await handIds(a);
     assert.deepEqual(ha, await handIds(b));
-    assert.deepEqual(ha, L.drawCards(L.createDeck(), 4, L.createRng(4711)).map((c) => c.id));
+    assert.deepEqual(ha, L.nextHand({ adaptive: false }, L.createRng(4711), {}).map((c) => c.id));
   });
 
-  test('Schwachstellen üben: App zieht mit den gespeicherten Gewichten', async (t) => {
+  test('gleicher Seed → gleiche Karten, auch im reinen Zufall (Einstellung aus)', async (t) => {
+    const page = await open(t, { seed: 4711, settings: { adaptive: false, realisticTricks: false } });
+    await page.click('#start-btn');
+    assert.deepEqual(await handIds(page), L.drawCards(L.createDeck(), 4, L.createRng(4711)).map((c) => c.id));
+  });
+
+  test('Schwachstellen üben: App zieht mit den gespeicherten Gewichten (realistische Stiche und reiner Zufall)', async (t) => {
     const store = L.emptyStore();
     store.cardStats = { 'herz-ober': { seen: 40, wrong: 40 }, 'gras-unter': { seen: 40, wrong: 30 } };
-    const page = await open(t, { seed: 99, store, settings: { adaptive: true } });
+    for (const realisticTricks of [true, false]) {
+      const page = await open(t, { seed: 99, store: JSON.parse(JSON.stringify(store)), settings: { adaptive: true, realisticTricks } });
+      await page.click('#start-btn');
+      const expected = (realisticTricks
+        ? L.drawRealisticStich(L.createRng(99), L.cardWeights(store.cardStats))
+        : L.drawCards(L.createDeck(), 4, L.createRng(99), L.cardWeights(store.cardStats))).map((c) => c.id);
+      assert.deepEqual(await handIds(page), expected, `realisticTricks=${realisticTricks}`);
+    }
+  });
+
+  test('Realistische Stiche: Schalter ist an, lässt sich ausschalten und bleibt nach dem Neuladen erhalten', async (t) => {
+    const page = await open(t, { seed: 5 });
+    assert.equal(await page.isChecked('#set-realisticTricks'), true, 'Standard: an');
+    assert.equal(await page.textContent('[data-field="realisticTricks"] label'), 'Echte Stich');
+    await page.click('#set-realisticTricks');
+    assert.equal((await storeOf(page)).settings.realisticTricks, false);
+    await page.reload();
+    await page.waitForSelector('body.ready');
+    assert.equal(await page.isChecked('#set-realisticTricks'), false, 'bleibt aus');
+    await page.click('label[for="set-language-hochdeutsch"]');
+    assert.equal(await page.textContent('[data-field="realisticTricks"] label'), 'Realistische Stiche');
     await page.click('#start-btn');
-    const expected = L.drawCards(L.createDeck(), 4, L.createRng(99), L.cardWeights(store.cardStats)).map((c) => c.id);
-    assert.deepEqual(await handIds(page), expected);
+    assert.deepEqual(await handIds(page), L.nextHand({ realisticTricks: false }, L.createRng(5), {}).map((c) => c.id), 'ohne Schalter: reiner Zufall');
+  });
+
+  test('Realistische Stiche: die Karten stammen aus einem regelgerechten Stich (4 verschiedene Karten, passende Art)', async (t) => {
+    for (const seed of [3, 8, 13]) {
+      const page = await open(t, { seed, settings: { adaptive: false, displaySeconds: 3 } });
+      await page.click('#start-btn');
+      const ids = await handIds(page);
+      assert.equal(new Set(ids).size, 4);
+      assert.deepEqual(ids, L.randomStich(L.createRng(seed)).map((c) => c.id));
+      assert.ok(['trumpf4', 'trumpf3+farbe', 'farbe4', 'farbe3+trumpf', 'farbe3+andere', 'gemischt'].includes(L.stichProfile(ids.map(L.cardById)).kind));
+    }
   });
 });
 
@@ -640,15 +676,15 @@ test.describe('Einstellungen', () => {
   test('Layout kennt die Zahl der sichtbaren Einstellungszeilen (damit sie die Höhe teilen)', async (t) => {
     const page = await open(t);
     const rows = () => page.evaluate(() => { const f = document.getElementById('settings-form'); return [f.style.getPropertyValue('--rows'), f.style.getPropertyValue('--rows2')]; });
-    assert.deepEqual(await rows(), ['11', '6']);
+    assert.deepEqual(await rows(), ['12', '6']);
     await page.click('label[for="set-revealMode-sequential"]');
-    assert.deepEqual(await rows(), ['12', '6']);
-    await page.click('#set-answerLimitEnabled');
     assert.deepEqual(await rows(), ['13', '7']);
+    await page.click('#set-answerLimitEnabled');
+    assert.deepEqual(await rows(), ['14', '7']);
     await page.click('label[for="set-gameMode-endless"]');
-    assert.deepEqual(await rows(), ['12', '6']);
+    assert.deepEqual(await rows(), ['13', '7']);
     await page.click('label[for="set-language-hochdeutsch"]');
-    assert.deepEqual(await rows(), ['12', '6'], 'bleibt nach Sprachwechsel erhalten');
+    assert.deepEqual(await rows(), ['13', '7'], 'bleibt nach Sprachwechsel erhalten');
   });
 
   test('Sprache umschalten: alles auf Hochdeutsch', async (t) => {

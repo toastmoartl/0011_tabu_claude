@@ -187,6 +187,7 @@
     { key: 'answerLimitEnabled', type: 'toggle', label: 'answerLimit' },
     { key: 'answerLimitSeconds', type: 'range', label: 'answerLimitSeconds', unit: 'seconds', showIf: function (s) { return s.answerLimitEnabled; } },
     { key: 'adaptive', type: 'toggle', label: 'adaptive' },
+    { key: 'realisticTricks', type: 'toggle', label: 'realistic' },
     { key: 'sound', type: 'toggle', label: 'sound' },
     { key: 'vibration', type: 'toggle', label: 'vibration' },
     { key: 'theme', type: 'segment', label: 'theme', options: [['auto', 'themeAuto'], ['light', 'themeLight'], ['dark', 'themeDark']] },
@@ -367,8 +368,7 @@
     var token = ++state.roundToken;
     state.roundNumber += 1;
     var s = settings();
-    var weights = s.adaptive ? L.cardWeights(state.store.cardStats) : null;
-    state.hand = L.drawCards(L.createDeck(), L.HAND_SIZE, rng, weights);
+    state.hand = L.nextHand(s, rng, state.store.cardStats); // realistischer Stich oder reiner Zufall (Einstellung)
     state.choices = [];
     go(state.phase === 'summary' ? 'AGAIN' : state.phase === 'feedback' ? 'NEXT' : 'START');
     document.body.classList.remove('is-correct', 'is-wrong');
