@@ -121,6 +121,33 @@ test.describe('renderCard (Einbindung als Bild)', () => {
 });
 
 // ---------------------------------------------------------------------------
+test.describe('Textkarte (Notfall-Vorderseite, wenn ein Bild nicht lädt)', () => {
+  const deck = L.createDeck();
+
+  test('für alle 24 Karten: wohlgeformt, beschriftet, zeigt Schlag und Farbe als Text', () => {
+    for (const c of deck) {
+      const html = C.renderFallback(c);
+      assertWellFormed(html, c.id);
+      assert.ok(html.includes('class="card-fallback"'), c.id);
+      assert.ok(html.includes(`aria-label="${L.cardLabel(c)}"`), c.id);
+      assert.ok(html.includes(`data-card="${c.id}"`) && html.includes(`data-suit="${c.suit}"`), c.id);
+      assert.ok(html.includes(`>${L.RANK_NAMES[c.rank]}</span>`), `${c.id}: Schlag`);
+      assert.ok(html.includes(`>${L.SUIT_NAMES[c.suit]}</span>`), `${c.id}: Farbe`);
+      assert.ok(!/<img|<svg|src=/.test(html), `${c.id}: braucht kein Bild`);
+    }
+  });
+
+  test('alle 24 Textkarten unterscheiden sich', () => {
+    assert.equal(new Set(deck.map((c) => C.renderFallback(c))).size, 24);
+  });
+
+  test('unbekannte Karten werden abgelehnt', () => {
+    assert.throws(() => C.renderFallback({ suit: 'pik', rank: 'sau' }), /Unbekannte Karte/);
+    assert.throws(() => C.renderFallback(null), /Unbekannte Karte/);
+  });
+});
+
+// ---------------------------------------------------------------------------
 test.describe('Rückseite & Farbsymbole (Inline-SVG)', () => {
   test('Rückseite ist wohlgeformt, im Kartenformat und für Screenreader versteckt', () => {
     const back = C.renderBack();

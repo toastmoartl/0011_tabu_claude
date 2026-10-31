@@ -41,7 +41,8 @@
     roundNumber: 0,
     answerStartedAt: 0,
     countdown: null,
-    lastSummary: null
+    lastSummary: null,
+    roundToken: 0
   };
 
   function settings() { return state.store.settings; }
@@ -322,8 +323,48 @@
     bar.dataset.kind = kind || '';
   }
 
+  /**
+   * Wartet, bis die Vorderseiten der ausgeteilten Karten wirklich geladen UND gezeichnet sind. Sonst würden die
+   * Karten umgedreht, bevor das Bild da ist (man sähe nur den grünen Tisch), und die Anzeigezeit wäre schon
+   * abgelaufen. Fällt ein Bild aus (auch nach einem zweiten Versuch), tritt eine Textkarte an seine Stelle.
+   */
+  var CARD_LOAD_TIMEOUT_MS = 8000;
+
+  function loadImage(img) {
+    function once() {
+      if (img.decode) return img.decode();
+      return new Promise(function (resolve, reject) {
+        if (img.complete && img.naturalWidth > 0) resolve();
+        else { img.onload = resolve; img.onerror = reject; }
+      });
+    }
+    return once().catch(function () {
+      // zweiter Versuch (z. B. nach einem kurzen Netzaussetzer); der Parameter umgeht einen zwischengespeicherten Fehler
+      img.src = img.getAttribute('src').split('?')[0] + '?retry=' + Date.now();
+      return once();
+    }).then(function () { return true; }, function () { return false; });
+  }
+
+  function useFallbackFace(img, card) {
+    if (!card || !img.parentNode) return;
+    var holder = document.createElement('div');
+    holder.innerHTML = C.renderFallback(card);
+    img.parentNode.replaceChild(holder.firstChild, img);
+  }
+
+  function whenCardsReady() {
+    var imgs = $all('#hand .front img');
+    var ok = imgs.map(function () { return false; });
+    var jobs = imgs.map(function (img, i) { return loadImage(img).then(function (result) { ok[i] = result; }); });
+    var timeout = new Promise(function (resolve) { window.setTimeout(resolve, CARD_LOAD_TIMEOUT_MS); });
+    return Promise.race([Promise.all(jobs), timeout]).then(function () {
+      imgs.forEach(function (img, i) { if (!ok[i]) useFallbackFace(img, state.hand[i]); });
+    });
+  }
+
   function startRound() {
     stopCountdown();
+    var token = ++state.roundToken;
     state.roundNumber += 1;
     var s = settings();
     var weights = s.adaptive ? L.cardWeights(state.store.cardStats) : null;
@@ -340,6 +381,19 @@
     $('#prompt').textContent = tr('watch');
     setBar(1, 'display');
 
+    // Erst aufdecken (und die Anzeigezeit starten), wenn die Bilder da sind. Dauert es länger, sagt es ein Hinweis.
+    var slowHint = window.setTimeout(function () {
+      if (state.roundToken === token && state.phase === 'reveal') $('#prompt').textContent = tr('loading');
+    }, 400);
+    whenCardsReady().then(function () {
+      window.clearTimeout(slowHint);
+      if (state.roundToken !== token || state.phase !== 'reveal') return; // inzwischen beendet oder neue Runde
+      $('#prompt').textContent = tr('watch');
+      beginReveal(s);
+    });
+  }
+
+  function beginReveal(s) {
     var schedule = L.revealSchedule(s);
     var lastCardAt = schedule.cardTimes[schedule.cardTimes.length - 1];
     var shown = 0;
@@ -603,9 +657,10 @@
     });
   }
 
-  /** Alle Kartenbilder früh laden, damit beim ersten Umdrehen nichts nachflackert. */
+  /** Alle Kartenbilder früh laden und festhalten, damit der Browser sie nicht wieder verwirft. */
+  var preloaded = [];
   function preloadCards() {
-    L.createDeck().forEach(function (card) { var img = new Image(); img.src = C.cardUrl(card); });
+    L.createDeck().forEach(function (card) { var img = new Image(); img.src = C.cardUrl(card); preloaded.push(img); });
   }
 
   function init() {

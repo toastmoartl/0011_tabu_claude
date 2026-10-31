@@ -35,6 +35,17 @@ abgelaufen) = ein deutlich längerer Brummer (300 ms) und rotes Aufblitzen – s
 Hinsehen unterscheiden. Die Werte stehen als `VIBRATION` in `js/logic.js`; Vibration lässt sich in den
 Einstellungen ausschalten.
 
+## Kartenbilder im schlechten Netz
+
+Auf der veröffentlichten Seite kommen die Kartenbilder übers Internet. Damit man nie eine „aufgedeckte“,
+aber leere (grüne) Karte sieht:
+
+- Karten werden **erst umgedreht, wenn alle vier Bilder geladen und gezeichnet sind**. Die Anzeigezeit zählt erst ab dann.
+  Dauert das länger als 0,4 s, steht „Karten werden geladen …“ da.
+- Schlägt ein Bild fehl, gibt es **einen zweiten Versuch**; klappt auch der nicht (oder nach 8 s), erscheint eine
+  **Textkarte** („Sau / GRAS“), und das Spiel läuft weiter.
+- Alle 24 Bilder werden beim Start vorgeladen; die Vorderseite hat eine cremefarbene Grundfläche statt eines „Lochs“.
+
 ## Bildschirmgrößen
 
 Das Spiel ist für Handys im Hochformat gebaut, vor allem das Samsung Galaxy S23 (360×780 CSS-Pixel,
@@ -71,6 +82,7 @@ npm run test:e2e                     # nur Browser-Tests
 
 - **Unit-Tests** (`tests/unit`, `node:test`): Spiellogik und Kartendateien (vollständig, wohlgeformt, richtige Karte hinter dem Dateinamen, keine Skripte oder externen Verweise). Der Lauf
   schlägt fehl, wenn die Abdeckung unter 95 % Zeilen / 90 % Zweige / 95 % Funktionen fällt.
+- **Netz-Test** (`tests/e2e/slow-network.e2e.test.js`): ein kleiner Test-Server simuliert langsame, ausgefallene und kurz unterbrochene Kartenbilder.
 - **Layout-Test** (`tests/e2e/responsive.e2e.test.js`): 11 Bildschirmgrößen (S23 in zwei Höhen, iPhone, Tablet, Querformat, Laptop, Full HD) × 9 Ansichten – kein Scrollen, nichts über dem Rand, kein abgeschnittener Text, Bedienelemente groß genug, Karten gleich groß und ohne Überlappung.
 - **End-to-End-Tests** (`tests/e2e`, Playwright/Chromium): kompletter Spielablauf in
   beiden Eingabemodi, Zeitsteuerung (Anzeigedauer, Aufdecken nacheinander, Zeitdruck),
