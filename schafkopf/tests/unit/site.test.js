@@ -4,7 +4,6 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { execFileSync } = require('node:child_process');
 const L = require('../../js/logic.js');
 const C = require('../../js/cards.js');
 const { buildSite } = require('../../../scripts/build-site.js');
@@ -28,8 +27,8 @@ test.describe('Auslieferungs-Mappe für GitHub Pages', () => {
   });
   test.after(() => fs.rmSync(path.dirname(out), { recursive: true, force: true }));
 
-  test('enthält Startseite, Schafkopf-Trainer, ZIP und .nojekyll', () => {
-    for (const f of ['index.html', 'schafkopf/index.html', 'schafkopf.zip', '.nojekyll']) {
+  test('enthält Startseite, Schafkopf-Trainer und .nojekyll', () => {
+    for (const f of ['index.html', 'schafkopf/index.html', '.nojekyll']) {
       assert.ok(fs.existsSync(path.join(out, f)), f);
     }
   });
@@ -63,9 +62,9 @@ test.describe('Auslieferungs-Mappe für GitHub Pages', () => {
     }
   });
 
-  test('Startseite verlinkt den Schafkopf-Trainer und den Download', () => {
+  test('Startseite verlinkt den Schafkopf-Trainer', () => {
     const html = fs.readFileSync(path.join(out, 'index.html'), 'utf8');
-    for (const href of ['schafkopf/', 'schafkopf.zip']) assert.ok(html.includes(`href="${href}"`), href);
+    for (const href of ['schafkopf/']) assert.ok(html.includes(`href="${href}"`), href);
   });
 
   test('Verweise sind relativ (funktioniert unter /<repo-name>/ auf Pages)', () => {
@@ -82,8 +81,6 @@ test.describe('Auslieferungs-Mappe für GitHub Pages', () => {
     for (const f of all.filter((f) => /\.(html|js|svg|txt|md)$/.test(f))) {
       assert.ok(!/tabu/i.test(fs.readFileSync(path.join(out, f), 'utf8')), `${f} erwähnt Tabu`);
     }
-    const zipNames = execFileSync('unzip', ['-Z1', path.join(out, 'schafkopf.zip')]).toString();
-    assert.ok(!/tabu/i.test(zipNames));
   });
 
   test('Datenschutz: keine externen Adressen in Seiten, Skripten oder Grafiken', () => {
@@ -113,33 +110,31 @@ test.describe('Auslieferungs-Mappe für GitHub Pages', () => {
     }
   });
 
-  test('ZIP enthält genau die Spieldateien, index.html liegt oben, und ist unverändert lesbar', () => {
-    const zip = path.join(out, 'schafkopf.zip');
-    execFileSync('unzip', ['-tq', zip]);
-    const listed = execFileSync('unzip', ['-Z1', zip]).toString().split('\n').filter((l) => l && !l.endsWith('/')).sort();
-    assert.deepEqual(listed, walk(path.join(out, 'schafkopf')).sort());
-    assert.ok(listed.includes('index.html'));
+  test('Es wird kein ZIP oder anderes Archiv veröffentlicht und nirgends zum Download angeboten', () => {
+    const all = walk(out);
+    assert.ok(all.every((f) => !/\.(zip|tar|tgz|gz|7z|rar)$/i.test(f)), 'Archiv in der Mappe');
+    for (const page of ['index.html', 'schafkopf/index.html']) {
+      const html = fs.readFileSync(path.join(out, page), 'utf8');
+      assert.ok(!/\.zip\b|\sdownload[\s=>]/i.test(html), `${page}: Verweis auf ein Archiv oder download-Attribut`);
+    }
   });
 
-  test('entpacktes ZIP funktioniert wirklich im Browser (Spiel startet, Karten laden)', async () => {
+  test('die gebaute Seite funktioniert wirklich im Browser (Spiel startet, Karten und Schriften laden)', async () => {
     const { chromium } = require('playwright');
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'unz-'));
+    const browser = await chromium.launch();
     try {
-      execFileSync('unzip', ['-q', path.join(out, 'schafkopf.zip'), '-d', dir]);
-      const browser = await chromium.launch();
       const page = await browser.newPage();
       const errors = [];
       page.on('pageerror', (e) => errors.push(e.message));
-      await page.goto('file://' + path.join(dir, 'index.html') + '?seed=3');
+      await page.goto('file://' + path.join(out, 'schafkopf/index.html') + '?seed=3');
       await page.waitForSelector('body.ready');
       await page.click('#start-btn');
       await page.waitForSelector('#hand .card.up');
       const loaded = await page.$$eval('#hand .front img', (imgs) => imgs.map((i) => i.complete && i.naturalWidth === 600));
-      await browser.close();
       assert.deepEqual(loaded, [true, true, true, true]);
       assert.deepEqual(errors, []);
     } finally {
-      fs.rmSync(dir, { recursive: true, force: true });
+      await browser.close();
     }
   });
 
