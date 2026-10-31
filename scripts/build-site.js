@@ -3,11 +3,13 @@
 /*
  * Baut die Mappe für GitHub Pages:
  *
- *   <out>/index.html          Startseite mit Links
- *   <out>/tabu/index.html     Tabu-Spiel (liegt im Repo im Wurzelordner)
+ *   <out>/index.html          Startseite mit Link und Download
  *   <out>/schafkopf/          Schafkopf-Trainer (nur index.html, js/, assets/ – keine Tests)
  *   <out>/schafkopf.zip       dasselbe als ZIP zum Herunterladen
  *   <out>/.nojekyll           Pages soll die Dateien unverändert ausliefern
+ *
+ * Veröffentlicht wird ausschließlich diese Auswahl (Whitelist). Das Tabu-Spiel im
+ * Repo-Wurzelordner gehört bewusst nicht dazu.
  *
  * Aufruf: node scripts/build-site.js [ausgabeordner]   (Standard: _site)
  */
@@ -27,11 +29,9 @@ function buildSite(outArg) {
   if (out === ROOT || ROOT.startsWith(out + path.sep)) throw new Error('Ausgabeordner darf nicht das Repo selbst sein: ' + out);
 
   fs.rmSync(out, { recursive: true, force: true });
-  fs.mkdirSync(path.join(out, 'tabu'), { recursive: true });
   fs.mkdirSync(path.join(out, 'schafkopf'), { recursive: true });
 
   fs.copyFileSync(path.join(ROOT, 'site', 'index.html'), path.join(out, 'index.html'));
-  fs.copyFileSync(path.join(ROOT, 'index.html'), path.join(out, 'tabu', 'index.html'));
   for (const f of GAME_FILES) copyRecursive(path.join(ROOT, 'schafkopf', f), path.join(out, 'schafkopf', f));
   fs.writeFileSync(path.join(out, '.nojekyll'), '');
 

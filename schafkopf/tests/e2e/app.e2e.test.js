@@ -28,7 +28,7 @@ async function open(t, { settings = {}, store = null, raw = null, empty = false,
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  page.on('console', (m) => { if (m.type() === 'error' && !/fonts\.(googleapis|gstatic)/.test(m.text()) && !/ERR_/.test(m.text())) errors.push(m.text()); });
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   let data = empty ? undefined : raw;
   if (data === null) {
     const st = store || L.emptyStore();
@@ -129,6 +129,45 @@ test.describe('Start & Darstellung', () => {
     await page.click('#start-btn');
     await waitPhase(page, 'reveal');
     assert.equal((await handIds(page)).length, 4);
+  });
+
+  test('Datenschutz: ein kompletter Spieldurchlauf macht keine einzige Anfrage ins Internet', async (t) => {
+    const context = await browser.newContext({ reducedMotion: 'reduce' });
+    const page = await context.newPage();
+    const requests = [];
+    page.on('request', (r) => requests.push(r.url()));
+    t.after(() => context.close());
+    const store = L.emptyStore();
+    store.settings = L.sanitizeSettings({ ...FAST, inputMode: 'number', rounds: 1 });
+    await page.goto(PAGE_URL);
+    await page.evaluate(([k, v]) => localStorage.setItem(k, v), [L.STORAGE_KEY, JSON.stringify(store)]);
+    await page.reload();
+    await page.waitForSelector('body.ready');
+    await page.click('#start-btn');
+    await playNumberRound(page);
+    await page.click('#next-btn');
+    await waitPhase(page, 'summary');
+    await page.click('#summary-stats-btn');
+    await waitPhase(page, 'stats');
+    assert.ok(requests.length > 5, 'es wurden Anfragen aufgezeichnet');
+    const foreign = requests.filter((u) => !u.startsWith('file://'));
+    assert.deepEqual(foreign, [], 'Anfragen an Fremdserver');
+    assert.ok(requests.some((u) => u.endsWith('.woff2')), 'Schriften werden geladen');
+  });
+
+  test('die lokalen Schriften sind im Browser wirklich geladen und aktiv', async (t) => {
+    const page = await open(t);
+    await page.evaluate(() => document.fonts.ready);
+    const status = await page.evaluate(() => Array.from(document.fonts).map((f) => `${f.family}|${f.weight}|${f.status}`).sort());
+    // Schriften werden erst geladen, wenn Text sie braucht – Titel (Fraktur) und Kreide-Schrift stehen auf der Startseite
+    assert.deepEqual(status.map((x) => x.split('|').slice(0, 2).join('|')), ['Kalam|400', 'Kalam|700', 'UnifrakturMaguntia|400']);
+    const loaded = await page.evaluate(async () => {
+      await Promise.all(Array.from(document.fonts).map((f) => f.load()));
+      return Array.from(document.fonts).every((f) => f.status === 'loaded');
+    });
+    assert.equal(loaded, true);
+    const h1 = await page.evaluate(() => getComputedStyle(document.querySelector('h1')).fontFamily);
+    assert.match(h1, /^"?UnifrakturMaguntia/);
   });
 
   test('Handy (360×640): kein seitliches Scrollen, Karten passen in die Breite', async (t) => {

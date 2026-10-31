@@ -61,8 +61,17 @@ Die Kartenbilder stammen aus dem mitgelieferten Set „Bayerisches Schafkopfblat
 ## Online stellen (GitHub Pages)
 
 Der Workflow `.github/workflows/pages.yml` testet alles und veröffentlicht dann
-Startseite, Schafkopf-Trainer, Tabu und `schafkopf.zip` – bei jedem Push auf `main`.
+Startseite, Schafkopf-Trainer und `schafkopf.zip` – bei jedem Push auf `main`.
+Veröffentlicht wird nur eine feste Auswahl (siehe `scripts/build-site.js`); das Tabu-Spiel im
+Wurzelordner gehört nicht dazu.
 Einmalig nötig: **Settings → Pages → Source: „GitHub Actions“**.
 Die Seite liegt danach unter `https://<benutzer>.github.io/<repo>/`.
 
 Lokal ausprobieren: `node scripts/build-site.js _site` baut dieselbe Mappe.
+
+## Datenschutz & Schriften
+
+Die Seite lädt nichts von Dritten: keine Schriften-Dienste, kein Tracking, keine externen Skripte.
+Die Schriften **Kalam** und **UnifrakturMaguntia** liegen in `assets/fonts/` (SIL Open Font License 1.1,
+Lizenztexte liegen daneben). Das Verhalten sichern Tests ab (keine externen Adressen im Code,
+im Browser gehen alle Anfragen nur an die eigene Seite).
