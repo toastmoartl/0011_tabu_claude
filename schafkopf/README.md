@@ -57,3 +57,12 @@ npm run test:e2e                     # nur Browser-Tests
 ## Karten
 
 Die Kartenbilder stammen aus dem mitgelieferten Set „Bayerisches Schafkopfblatt – SVG“ (neu gezeichnet, bayerisch inspiriert, keine 1:1-Reproduktion eines kommerziellen Blatts). Verwendet werden die 24 Karten des kurzen Blatts (Neun bis Sau); Sieben und Acht werden nicht gebraucht. Die Kartenrückseite ist eigens erzeugt, weil das Set keine enthält.
+
+## Online stellen (GitHub Pages)
+
+Der Workflow `.github/workflows/pages.yml` testet alles und veröffentlicht dann
+Startseite, Schafkopf-Trainer, Tabu und `schafkopf.zip` – bei jedem Push auf `main`.
+Einmalig nötig: **Settings → Pages → Source: „GitHub Actions“**.
+Die Seite liegt danach unter `https://<benutzer>.github.io/<repo>/`.
+
+Lokal ausprobieren: `node scripts/build-site.js _site` baut dieselbe Mappe.

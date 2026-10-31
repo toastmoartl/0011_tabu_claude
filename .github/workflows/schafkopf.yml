@@ -4,10 +4,14 @@ on:
   push:
     paths:
       - 'schafkopf/**'
+      - 'scripts/**'
+      - 'site/**'
       - '.github/workflows/schafkopf.yml'
   pull_request:
     paths:
       - 'schafkopf/**'
+      - 'scripts/**'
+      - 'site/**'
       - '.github/workflows/schafkopf.yml'
 
 jobs:
