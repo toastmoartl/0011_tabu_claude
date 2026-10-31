@@ -266,13 +266,13 @@
   }
 
   /**
-   * Vibrationsmuster in Millisekunden (Vibrieren/Pause/Vibrieren …).
-   * Richtig: ein kurzer Impuls. Falsch: zwei deutlich getrennte, längere Impulse –
-   * die Pause muss lang genug sein, sonst fühlen sich beide wie ein einziger Stoß an.
+   * Vibrationsdauer in Millisekunden. Wichtig ist nur, dass man „falsch“ klar von „richtig“ unterscheiden kann:
+   * richtig = kurzes Antippen, falsch = ein deutlich längerer Brummer (ein einzelner langer Impuls ist
+   * zuverlässiger spürbar als eine Folge aus Impulsen mit Pause).
    */
   var VIBRATION = Object.freeze({
     right: 30,
-    wrong: Object.freeze([100, 110, 100]),
+    wrong: 300,
     key: 8
   });
 

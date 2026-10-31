@@ -357,17 +357,15 @@ test.describe('Zustandsmaschine', () => {
     assert.equal(L.afterAnswerStep(endless, 500, false), 'FEEDBACK');
   });
 
-  test('Vibration: richtig = ein kurzer Impuls, falsch = zwei deutlich getrennte, längere Impulse', () => {
-    const [first, gap, second] = L.VIBRATION.wrong;
-    assert.equal(typeof L.VIBRATION.right, 'number');
-    assert.ok(L.VIBRATION.right <= 60, 'richtig ist ein kurzes Antippen');
-    assert.equal(L.VIBRATION.wrong.length, 3, 'Vibrieren – Pause – Vibrieren');
-    assert.ok(first >= 60 && second >= 60, 'beide Impulse sind lang genug, um gespürt zu werden');
-    assert.ok(gap >= 80, 'die Pause ist lang genug, damit es nicht wie ein einziger Stoß wirkt');
-    assert.ok(first <= 250 && second <= 250, 'nicht unangenehm lang');
-    assert.ok(first + gap + second > L.VIBRATION.right * 3, 'falsch fühlt sich klar anders an als richtig');
-    assert.ok(Number.isFinite(L.VIBRATION.key) && L.VIBRATION.key < L.VIBRATION.right, 'Tastendruck ist das leiseste Signal');
-    assert.ok(Object.isFrozen(L.VIBRATION) && Object.isFrozen(L.VIBRATION.wrong), 'Muster lassen sich nicht aus Versehen ändern');
+  test('Vibration: falsch ist klar von richtig zu unterscheiden (deutlich länger)', () => {
+    const { right, wrong, key } = L.VIBRATION;
+    assert.ok(Number.isFinite(right) && Number.isFinite(wrong) && Number.isFinite(key), 'alle Muster sind einfache Zahlen (Millisekunden)');
+    assert.ok(right <= 60, 'richtig ist ein kurzes Antippen');
+    assert.ok(wrong >= 200, 'falsch ist lang genug, um sicher gespürt zu werden');
+    assert.ok(wrong <= 600, 'falsch ist nicht unangenehm lang');
+    assert.ok(wrong >= right * 5, 'falsch ist mindestens fünfmal so lang wie richtig – klar unterscheidbar');
+    assert.ok(key < right, 'Tastendruck ist das leiseste Signal');
+    assert.ok(Object.isFrozen(L.VIBRATION), 'Werte lassen sich nicht aus Versehen ändern');
   });
 
   test('jede Antwort-Entscheidung passt zur Zustandsmaschine (feedback → NEXT/FINISH ist erlaubt)', () => {

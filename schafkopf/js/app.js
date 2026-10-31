@@ -464,7 +464,7 @@
     setBar(0, 'idle');
     nextBtn.focus();
 
-    if (record.isCorrect) { playCorrect(); vibrate(L.VIBRATION.right); } else { playWrong(); vibrate(L.VIBRATION.wrong.slice()); flash('bad'); }
+    if (record.isCorrect) { playCorrect(); vibrate(L.VIBRATION.right); } else { playWrong(); vibrate(L.VIBRATION.wrong); flash('bad'); }
   }
 
   function onNext() {

@@ -528,21 +528,22 @@ test.describe('Spielablauf', () => {
     assert.deepEqual(now, ['flash-bad'], 'grün und rot nie gleichzeitig');
   });
 
-  test('Vibration: richtig = ein kurzer Impuls, falsch = zwei deutlich getrennte Impulse', async (t) => {
+  test('Vibration: richtig = kurzes Antippen, falsch = deutlich längerer Brummer', async (t) => {
     const page = await open(t, { recordVibration: true, settings: { vibration: true, rounds: 4 } });
     await page.click('#start-btn');
     await playChoiceRound(page);
     assert.deepEqual(await vibrations(page), [L.VIBRATION.right], 'richtig: ein kurzer Impuls');
     await playChoiceRound(page, { wrong: true });
-    assert.deepEqual(await vibrations(page), [L.VIBRATION.right, [100, 110, 100]], 'falsch: zwei Impulse mit Pause');
-    assert.deepEqual((await vibrations(page))[1], [...L.VIBRATION.wrong]);
+    const [right, wrong] = await vibrations(page);
+    assert.deepEqual([right, wrong], [L.VIBRATION.right, L.VIBRATION.wrong]);
+    assert.ok(wrong >= right * 5, 'falsch ist klar länger als richtig');
   });
 
-  test('Vibration: abgelaufene Zeit vibriert doppelt wie eine falsche Antwort', async (t) => {
+  test('Vibration: abgelaufene Zeit vibriert lang wie eine falsche Antwort', async (t) => {
     const page = await open(t, { recordVibration: true, settings: { vibration: true, answerLimitEnabled: true, answerLimitSeconds: 2 } });
     await page.click('#start-btn');
     await waitPhase(page, 'feedback');
-    assert.deepEqual(await vibrations(page), [[...L.VIBRATION.wrong]]);
+    assert.deepEqual(await vibrations(page), [L.VIBRATION.wrong]);
   });
 
   test('Vibration aus: gar keine Vibration, auch nicht beim Ziffernblock', async (t) => {
