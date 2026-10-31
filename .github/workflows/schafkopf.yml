@@ -1,0 +1,31 @@
+name: Schafkopf-Trainer Tests
+
+on:
+  push:
+    paths:
+      - 'schafkopf/**'
+      - '.github/workflows/schafkopf.yml'
+  pull_request:
+    paths:
+      - 'schafkopf/**'
+      - '.github/workflows/schafkopf.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: schafkopf
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Abhängigkeiten installieren
+        run: npm install --no-audit --no-fund
+      - name: Chromium für Playwright installieren
+        run: npx playwright install --with-deps chromium
+      - name: Unit-Tests (mit Abdeckungs-Schwellen)
+        run: npm run test:unit
+      - name: End-to-End-Tests im Browser
+        run: npm run test:e2e
