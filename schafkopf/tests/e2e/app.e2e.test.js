@@ -81,22 +81,39 @@ test.describe('Start & Darstellung', () => {
     assert.ok(!(await page.isVisible('#screen-play')));
   });
 
-  test('alle 24 Karten und die Rückseite sind gültiges SVG und werden gezeichnet', async (t) => {
+  test('alle 24 Kartenbilder laden im Browser (Größe 600×900) und die Rückseite wird gezeichnet', async (t) => {
     const page = await open(t);
-    const result = await page.evaluate(() => {
+    const result = await page.evaluate(async () => {
       const L = window.SchafkopfLogic, C = window.SchafkopfCards;
-      const parser = new DOMParser();
-      const svgs = L.createDeck().map((c) => C.renderCard(c)).concat([C.renderBack()]);
-      const bad = svgs.filter((s) => parser.parseFromString(s, 'image/svg+xml').querySelector('parsererror'));
       const host = document.createElement('div');
-      host.style.width = '100px';
-      host.innerHTML = svgs.join('');
+      host.innerHTML = L.createDeck().map((c) => C.renderCard(c)).join('') + C.renderBack();
       document.body.appendChild(host);
-      const boxes = Array.from(host.querySelectorAll('svg')).map((s) => s.getBBox());
+      const imgs = Array.from(host.querySelectorAll('img'));
+      await Promise.all(imgs.map((img) => img.decode().catch(() => null)));
+      const broken = imgs.filter((img) => !img.complete || img.naturalWidth !== 600 || img.naturalHeight !== 900).map((i) => i.alt);
+      const back = host.querySelector('svg').getBoundingClientRect();
       host.remove();
-      return { bad: bad.length, n: svgs.length, empty: boxes.filter((b) => b.width < 150 || b.height < 250).length };
+      return { n: imgs.length, broken, backRatio: Math.round((back.width / back.height) * 1000) / 1000 };
     });
-    assert.deepEqual(result, { bad: 0, n: 25, empty: 0 });
+    assert.deepEqual(result, { n: 24, broken: [], backRatio: 0.667 });
+  });
+
+  test('gespielte Karten sind echte Bilder mit passendem Alternativtext und Seitenverhältnis 2:3', async (t) => {
+    const page = await open(t, { settings: { displaySeconds: 5 } });
+    await page.click('#start-btn');
+    await page.waitForSelector('#hand .card.up');
+    const cards = await page.$$eval('#hand .card', (els) => els.map((e) => {
+      const img = e.querySelector('.front img');
+      const r = e.getBoundingClientRect();
+      return { id: e.dataset.cardId, alt: img.alt, src: img.getAttribute('src'), loaded: img.complete && img.naturalWidth === 600, ratio: Math.round((r.width / r.height) * 100) / 100 };
+    }));
+    assert.equal(cards.length, 4);
+    for (const c of cards) {
+      assert.equal(c.alt, L.cardLabel(L.cardById(c.id)));
+      assert.match(c.src, /^assets\/cards\/[A-Za-z]+_[A-Za-z]+\.svg$/);
+      assert.ok(c.loaded, c.id + ' nicht geladen');
+      assert.equal(c.ratio, 0.67);
+    }
   });
 
   test('kaputter Speicher: App startet trotzdem mit Standardwerten', async (t) => {

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="900" viewBox="0 0 600 900">
+<title>Sau Gras – Bayerisches Schafkopfblatt</title>
+<desc>Eigenständige, editierbare Vektorillustration einer Schafkopf-Spielkarte im bayerisch inspirierten Stil.</desc>
+<rect x="12" y="12" width="576" height="876" rx="34" fill="#f5edda" stroke="#3b3025" stroke-width="12"/>
+<rect x="30" y="30" width="540" height="840" rx="25" fill="none" stroke="#a78e61" stroke-width="3"/>
+<g font-family="Georgia,serif" fill="#2e2921">
+<text x="62" y="112" font-size="54" font-weight="bold">A</text>
+<text x="62" y="158" font-size="23">GRAS</text>
+<g transform="translate(0,0)"><path d="M78.2 222.6 C56.6 207.12,67.04 185.52,90.08 191.28 C103.75999999999999 204.6,90.8 222.6,78.2 222.6Z" fill="#28633d" stroke="#30291f" stroke-width="0.72"/><path d="M64.88 217.92 Q77.12 205.68 92.24 194.88" fill="none" stroke="#e9dfc5" stroke-width="1.08"/></g>
+<text x="538" y="788" font-size="54" font-weight="bold" text-anchor="end" transform="rotate(180 538 788)">A</text>
+<text x="538" y="742" font-size="23" text-anchor="end" transform="rotate(180 538 742)">GRAS</text>
+</g>
+<rect x="105" y="185" width="390" height="540" rx="18" fill="#eee2c7" stroke="#c0aa7d" stroke-width="3"/>
+<g>
+        <path d="M170 470 Q165 365 280 350 Q395 360 410 465 Q395 560 290 570 Q185 560 170 470Z" fill="#d5b68a" stroke="#342c21" stroke-width="8"/>
+        <path d="M205 390 L185 325 L250 360 M365 390 L395 325 L330 360" fill="#a95c42" stroke="#342c21" stroke-width="7"/>
+        <ellipse cx="290" cy="465" rx="90" ry="58" fill="#bd8c68" stroke="#342c21" stroke-width="6"/>
+        <ellipse cx="290" cy="485" rx="48" ry="29" fill="#ead8b8" stroke="#342c21" stroke-width="5"/>
+        <circle cx="260" cy="450" r="8" fill="#342c21"/><circle cx="320" cy="450" r="8" fill="#342c21"/>
+        <path d="M240 510 Q220 545 250 550 M340 510 Q360 545 330 550" fill="none" stroke="#f4e8cf" stroke-width="10"/>
+        <path d="M287.25 644.25 C254.25 620.6,270.2 587.6,305.4 596.4 C326.3 616.75,306.5 644.25,287.25 644.25Z" fill="#28633d" stroke="#30291f" stroke-width="1.1"/><path d="M266.9 637.1 Q285.6 618.4 308.7 601.9" fill="none" stroke="#e9dfc5" stroke-width="1.6500000000000001"/>
+        </g>
+<path d="M135 750 Q300 775 465 750" fill="none" stroke="#a78e61" stroke-width="3"/>
+<text x="300" y="817" text-anchor="middle" font-family="Georgia,serif" font-size="22" letter-spacing="4" fill="#66543a">BAYERISCHES BLATT</text>
+</svg>

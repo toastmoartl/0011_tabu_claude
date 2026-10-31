@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="900" viewBox="0 0 600 900">
+<title>König Schellen – Bayerisches Schafkopfblatt</title>
+<desc>Eigenständige, editierbare Vektorillustration einer Schafkopf-Spielkarte im bayerisch inspirierten Stil.</desc>
+<rect x="12" y="12" width="576" height="876" rx="34" fill="#f5edda" stroke="#3b3025" stroke-width="12"/>
+<rect x="30" y="30" width="540" height="840" rx="25" fill="none" stroke="#a78e61" stroke-width="3"/>
+<g font-family="Georgia,serif" fill="#2e2921">
+<text x="62" y="112" font-size="54" font-weight="bold">K</text>
+<text x="62" y="158" font-size="23">SCHELLEN</text>
+<g transform="translate(0,0)"><path d="M65.96000000000001 203.52 Q60.56 191.28 72.8 189.48 Q80 183.0 87.2 189.48 Q99.44 191.28 94.03999999999999 203.52 L90.44 222.24 Q80 228.36 69.56 222.24Z" fill="#b88624" stroke="#30291f" stroke-width="0.72"/><path d="M66.32 203.52 Q80 209.28 93.68 203.52" fill="none" stroke="#f3e6c6" stroke-width="1.44"/><circle cx="80" cy="215.04" r="1.7999999999999998" fill="#f3e6c6"/></g>
+<text x="538" y="788" font-size="54" font-weight="bold" text-anchor="end" transform="rotate(180 538 788)">K</text>
+<text x="538" y="742" font-size="23" text-anchor="end" transform="rotate(180 538 742)">SCHELLEN</text>
+</g>
+<rect x="105" y="185" width="390" height="540" rx="18" fill="#eee2c7" stroke="#c0aa7d" stroke-width="3"/>
+<g>
+        <path d="M220 390 Q205 330 235 300 Q290 260 345 300 Q375 335 355 390 L340 430 L235 430Z" fill="#e0b98b" stroke="#342c21" stroke-width="6"/>
+        <path d="M245 355 Q260 340 275 355 M315 355 Q330 340 345 355" fill="none" stroke="#342c21" stroke-width="6"/>
+        <path d="M270 395 Q290 408 312 395" fill="none" stroke="#7c3d32" stroke-width="5"/>
+        <path d="M220 430 Q290 405 360 430 L410 610 L170 610Z" fill="#315b48" stroke="#342c21" stroke-width="7"/>
+        <path d="M290 430 L290 605 M220 485 L360 485" stroke="#d6bd83" stroke-width="7"/>
+        <circle cx="290" cy="500" r="10" fill="#d6bd83"/><circle cx="290" cy="545" r="10" fill="#d6bd83"/>
+        <path d="M210 470 L150 560 L185 580 L250 510 M370 470 L430 560 L395 580 L330 510" fill="none" stroke="#315b48" stroke-width="30" stroke-linecap="round"/>
+        <path d="M245 270 L265 222 L290 258 L315 220 L338 270Z" fill="#bd963c" stroke="#342c21" stroke-width="5"/>
+        <path d="M273.62 527.44 Q267.32 513.16 281.6 511.06 Q290 503.5 298.4 511.06 Q312.68 513.16 306.38 527.44 L302.18 549.28 Q290 556.42 277.82 549.28Z" fill="#b88624" stroke="#30291f" stroke-width="0.84"/><path d="M274.04 527.44 Q290 534.16 305.96 527.44" fill="none" stroke="#f3e6c6" stroke-width="1.68"/><circle cx="290" cy="540.88" r="2.1" fill="#f3e6c6"/></g>
+<path d="M135 750 Q300 775 465 750" fill="none" stroke="#a78e61" stroke-width="3"/>
+<text x="300" y="817" text-anchor="middle" font-family="Georgia,serif" font-size="22" letter-spacing="4" fill="#66543a">BAYERISCHES BLATT</text>
+</svg>

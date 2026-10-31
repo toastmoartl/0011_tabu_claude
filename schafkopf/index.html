@@ -227,15 +227,15 @@
     margin: 0 auto;
     padding: 6px;
     /* Kartenhöhe an den Bildschirm anpassen: 2 Reihen müssen reinpassen */
-    width: min(100%, calc((100vh - 360px) * 0.625 + var(--gap)));
-    width: min(100%, calc((100dvh - 360px) * 0.625 + var(--gap)));
+    width: min(100%, calc((100vh - 360px) * 0.6667 + var(--gap)));
+    width: min(100%, calc((100dvh - 360px) * 0.6667 + var(--gap)));
     min-width: 220px;
   }
   @media (min-width: 640px) {
-    .hand { grid-template-columns: repeat(4, 1fr); width: min(100%, calc((100dvh - 330px) * 2.5 + 3 * var(--gap)), 760px); }
+    .hand { grid-template-columns: repeat(4, 1fr); width: min(100%, calc((100dvh - 330px) * 2.6667 + 3 * var(--gap)), 760px); }
   }
 
-  .card { aspect-ratio: 200 / 320; perspective: 900px; position: relative; }
+  .card { aspect-ratio: 600 / 900; perspective: 900px; position: relative; }
   .card-inner {
     position: relative; width: 100%; height: 100%;
     transform-style: preserve-3d; transition: transform .45s cubic-bezier(.3,.7,.3,1);
@@ -243,12 +243,12 @@
   .card.up .card-inner { transform: rotateY(180deg); }
   .face {
     position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
-    border-radius: 7%/4.4%; box-shadow: 0 4px 10px rgba(0,0,0,.45);
+    border-radius: 5.8%/3.9%; box-shadow: 0 4px 10px rgba(0,0,0,.45);
   }
   .face.front { transform: rotateY(180deg); }
-  .face svg { width: 100%; height: 100%; display: block; }
+  .face svg, .face img { width: 100%; height: 100%; display: block; user-select: none; -webkit-user-select: none; }
   .points-badge {
-    position: absolute; right: -8px; bottom: -8px; min-width: 2.1em; height: 2.1em; padding: 0 .3em;
+    position: absolute; left: 50%; bottom: -12px; transform: translateX(-50%); min-width: 2.1em; height: 2.1em; padding: 0 .3em;
     display: none; align-items: center; justify-content: center; border-radius: 1.05em;
     background: var(--slate); color: var(--chalk); font-family: var(--font-chalk); font-weight: 700;
     border: 2px solid var(--chalk); box-shadow: 0 2px 6px rgba(0,0,0,.5);
@@ -321,7 +321,7 @@
   .empty { color: var(--ink-dim); font-style: italic; list-style: none; }
   .weak-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 12px; }
   .weak { text-align: center; font-size: .85rem; display: grid; gap: 2px; }
-  .weak .mini svg { width: 72px; height: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,.35)); }
+  .weak .mini img { width: 72px; height: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,.35)); }
   .weak-rate { font-family: var(--font-chalk); font-weight: 700; color: var(--red); }
 
   @media (prefers-reduced-motion: reduce) {

@@ -31,7 +31,8 @@ Tastatur: `1`–`4` wählt eine Antwort, `Enter` geht weiter.
 |-------|--------|
 | `index.html` | Seite & Wirtshaus-Design (CSS) |
 | `js/logic.js` | Reine Spiellogik ohne DOM: Blatt, Ziehen (auch gewichtet), Antwortoptionen, Einstellungen, Zustandsmaschine, Statistik, Speicher-Migration, Texte |
-| `js/cards.js` | Selbst gezeichnete SVG-Karten im Stil des bayerischen Blatts |
+| `assets/cards/` | 24 Karten des bayerischen Blatts als SVG (600×900), Dateinamen `Farbe_Schlag.svg` |
+| `js/cards.js` | Einbindung der Kartenbilder (`<img>`), Kartenrückseite und Farbsymbole als Inline-SVG |
 | `js/app.js` | Oberfläche, pausierbarer Timer, Ton (WebAudio), Vibration |
 
 `?seed=123` in der URL macht die Kartenfolge reproduzierbar (für Tests).
@@ -46,9 +47,13 @@ npm run test:unit                    # nur Logik & Karten, mit Abdeckungs-Schwel
 npm run test:e2e                     # nur Browser-Tests
 ```
 
-- **Unit-Tests** (`tests/unit`, `node:test`): Spiellogik und Karten-SVGs. Der Lauf
+- **Unit-Tests** (`tests/unit`, `node:test`): Spiellogik und Kartendateien (vollständig, wohlgeformt, richtige Karte hinter dem Dateinamen, keine Skripte oder externen Verweise). Der Lauf
   schlägt fehl, wenn die Abdeckung unter 95 % Zeilen / 90 % Zweige / 95 % Funktionen fällt.
 - **End-to-End-Tests** (`tests/e2e`, Playwright/Chromium): kompletter Spielablauf in
   beiden Eingabemodi, Zeitsteuerung (Anzeigedauer, Aufdecken nacheinander, Zeitdruck),
   Speichern/Laden, kaputter Speicher, Sprache, Optik, Statistik, Handy- und Desktop-Layout,
   Tastatur, Reproduzierbarkeit per Seed – und dass dabei kein JS-Fehler auftritt.
+
+## Karten
+
+Die Kartenbilder stammen aus dem mitgelieferten Set „Bayerisches Schafkopfblatt – SVG“ (neu gezeichnet, bayerisch inspiriert, keine 1:1-Reproduktion eines kommerziellen Blatts). Verwendet werden die 24 Karten des kurzen Blatts (Neun bis Sau); Sieben und Acht werden nicht gebraucht. Die Kartenrückseite ist eigens erzeugt, weil das Set keine enthält.

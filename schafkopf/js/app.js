@@ -547,7 +547,13 @@
     });
   }
 
+  /** Alle Kartenbilder früh laden, damit beim ersten Umdrehen nichts nachflackert. */
+  function preloadCards() {
+    L.createDeck().forEach(function (card) { var img = new Image(); img.src = C.cardUrl(card); });
+  }
+
   function init() {
+    preloadCards();
     applyTheme();
     renderSettings();
     applyTexts();

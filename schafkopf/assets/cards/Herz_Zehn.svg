@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="900" viewBox="0 0 600 900">
+<title>Zehn Herz – Bayerisches Schafkopfblatt</title>
+<desc>Eigenständige, editierbare Vektorillustration einer Schafkopf-Spielkarte im bayerisch inspirierten Stil.</desc>
+<rect x="12" y="12" width="576" height="876" rx="34" fill="#f5edda" stroke="#3b3025" stroke-width="12"/>
+<rect x="30" y="30" width="540" height="840" rx="25" fill="none" stroke="#a78e61" stroke-width="3"/>
+<g font-family="Georgia,serif" fill="#2e2921">
+<text x="62" y="112" font-size="54" font-weight="bold">10</text>
+<text x="62" y="158" font-size="23">HERZ</text>
+<g transform="translate(0,0)"><path d="M80 217.2 C57.68 203.52,60.92 185.88,80 197.76 C99.08 185.88,102.32 203.52,80 217.2Z" fill="#a52d32" stroke="#30291f" stroke-width="0.72"/></g>
+<text x="538" y="788" font-size="54" font-weight="bold" text-anchor="end" transform="rotate(180 538 788)">10</text>
+<text x="538" y="742" font-size="23" text-anchor="end" transform="rotate(180 538 742)">HERZ</text>
+</g>
+<rect x="105" y="185" width="390" height="540" rx="18" fill="#eee2c7" stroke="#c0aa7d" stroke-width="3"/>
+<g><path d="M220 337.6 C196.44 323.16,199.86 304.54,220 317.08 C240.14 304.54,243.56 323.16,220 337.6Z" fill="#a52d32" stroke="#30291f" stroke-width="0.76"/><path d="M360 337.6 C336.44 323.16,339.86 304.54,360 317.08 C380.14 304.54,383.56 323.16,360 337.6Z" fill="#a52d32" stroke="#30291f" stroke-width="0.76"/><path d="M220 437.6 C196.44 423.16,199.86 404.54,220 417.08 C240.14 404.54,243.56 423.16,220 437.6Z" fill="#a52d32" stroke="#30291f" stroke-width="0.76"/><path d="M360 437.6 C336.44 423.16,339.86 404.54,360 417.08 C380.14 404.54,383.56 423.16,360 437.6Z" fill="#a52d32" stroke="#30291f" stroke-width="0.76"/><path d="M220 537.6 C196.44 523.16,199.86 504.54,220 517.08 C240.14 504.54,243.56 523.16,220 537.6Z" fill="#a52d32" stroke="#30291f" stroke-width="0.76"/><path d="M360 537.6 C336.44 523.16,339.86 504.54,360 517.08 C380.14 504.54,383.56 523.16,360 537.6Z" fill="#a52d32" stroke="#30291f" stroke-width="0.76"/><path d="M220 637.6 C196.44 623.16,199.86 604.54,220 617.08 C240.14 604.54,243.56 623.16,220 637.6Z" fill="#a52d32" stroke="#30291f" stroke-width="0.76"/><path d="M360 637.6 C336.44 623.16,339.86 604.54,360 617.08 C380.14 604.54,383.56 623.16,360 637.6Z" fill="#a52d32" stroke="#30291f" stroke-width="0.76"/><path d="M220 737.6 C196.44 723.16,199.86 704.54,220 717.08 C240.14 704.54,243.56 723.16,220 737.6Z" fill="#a52d32" stroke="#30291f" stroke-width="0.76"/><path d="M360 737.6 C336.44 723.16,339.86 704.54,360 717.08 C380.14 704.54,383.56 723.16,360 737.6Z" fill="#a52d32" stroke="#30291f" stroke-width="0.76"/></g>
+<path d="M135 750 Q300 775 465 750" fill="none" stroke="#a78e61" stroke-width="3"/>
+<text x="300" y="817" text-anchor="middle" font-family="Georgia,serif" font-size="22" letter-spacing="4" fill="#66543a">BAYERISCHES BLATT</text>
+</svg>
