@@ -25,6 +25,18 @@ Ton · Vibration · Tag/Abend/Automatisch · Boarisch/Hochdeutsch.
 
 Tastatur: `1`–`4` wählt eine Antwort, `Enter` geht weiter.
 
+## Bildschirmgrößen
+
+Das Spiel ist für Handys im Hochformat gebaut, vor allem das Samsung Galaxy S23 (360×780 CSS-Pixel,
+im Browser nach Abzug der Leisten etwa 360×680). **Jede Ansicht passt ohne Scrollen auf den Bildschirm** –
+auch Querformat, Tablet und Desktop.
+
+- Die Seite füllt genau die Bildschirmhöhe (`100dvh`); Karten, Tasten und Einstellungszeilen teilen sich den Platz.
+- Karten richten sich nach dem freien Platz (Container-Abfrage) und stehen 2×2 oder 4 nebeneinander – je nachdem, was größer wird.
+- Zahleneingabe über einen eigenen Ziffernblock, damit keine Handy-Tastatur die halbe Höhe wegnimmt.
+- Querformat: Karten links, Antwort und Rückmeldung rechts; Einstellungen in zwei Spalten.
+- Bei extrem kleinen Fenstern scrollt nur die Papier-Ansicht als Notbremse, nie die ganze Seite.
+
 ## Aufbau
 
 | Datei | Inhalt |
@@ -49,6 +61,7 @@ npm run test:e2e                     # nur Browser-Tests
 
 - **Unit-Tests** (`tests/unit`, `node:test`): Spiellogik und Kartendateien (vollständig, wohlgeformt, richtige Karte hinter dem Dateinamen, keine Skripte oder externen Verweise). Der Lauf
   schlägt fehl, wenn die Abdeckung unter 95 % Zeilen / 90 % Zweige / 95 % Funktionen fällt.
+- **Layout-Test** (`tests/e2e/responsive.e2e.test.js`): 11 Bildschirmgrößen (S23 in zwei Höhen, iPhone, Tablet, Querformat, Laptop, Full HD) × 9 Ansichten – kein Scrollen, nichts über dem Rand, kein abgeschnittener Text, Bedienelemente groß genug, Karten gleich groß und ohne Überlappung.
 - **End-to-End-Tests** (`tests/e2e`, Playwright/Chromium): kompletter Spielablauf in
   beiden Eingabemodi, Zeitsteuerung (Anzeigedauer, Aufdecken nacheinander, Zeitdruck),
   Speichern/Laden, kaputter Speicher, Sprache, Optik, Statistik, Handy- und Desktop-Layout,
