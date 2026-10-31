@@ -265,6 +265,16 @@
     return 'NEXT';
   }
 
+  /**
+   * Was passiert direkt nach einer Antwort?
+   * Richtig → ohne Umweg weiter ('NEXT') oder Ende ('FINISH').
+   * Falsch oder Zeit abgelaufen → erst die Rückmeldung mit der Rechnung ('FEEDBACK').
+   */
+  function afterAnswerStep(settings, answeredRounds, isCorrect) {
+    if (!isCorrect) return 'FEEDBACK';
+    return afterFeedbackEvent(settings, answeredRounds);
+  }
+
   // ---------------------------------------------------------------------------
   // Sitzung & Statistik
   // ---------------------------------------------------------------------------
@@ -627,6 +637,7 @@
     transition: transition,
     canTransition: canTransition,
     afterFeedbackEvent: afterFeedbackEvent,
+    afterAnswerStep: afterAnswerStep,
     createSession: createSession,
     recordAnswer: recordAnswer,
     summarizeSession: summarizeSession,

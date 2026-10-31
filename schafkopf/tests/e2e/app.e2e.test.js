@@ -59,14 +59,35 @@ async function handSum(page) {
   return L.sumPoints((await handIds(page)).map(L.cardById));
 }
 
+/** Tippt im Zahlenmodus die Summe ein. Richtig → es geht sofort weiter; falsch → Rückmeldung. */
 async function playNumberRound(page, { wrong = false } = {}) {
   await waitPhase(page, 'answer');
   const sum = await handSum(page);
   await page.fill('#number-input', String(wrong ? sum + 1 : sum));
   await page.press('#number-input', 'Enter');
-  await waitPhase(page, 'feedback');
+  if (wrong) await waitPhase(page, 'feedback');
+  else await page.waitForFunction(() => document.body.dataset.phase !== 'answer');
   return sum;
 }
+
+/** Klickt im Auswahlmodus gezielt eine richtige oder eine falsche Antwort. */
+async function playChoiceRound(page, { wrong = false } = {}) {
+  await waitPhase(page, 'answer');
+  const sum = await handSum(page);
+  const value = await page.$$eval('#choices button', (bs, [s, w]) => Number(bs.find((b) => (Number(b.dataset.value) !== s) === w).dataset.value), [sum, wrong]);
+  await page.click(`#choices button[data-value="${value}"]`);
+  if (wrong) await waitPhase(page, 'feedback');
+  else await page.waitForFunction(() => document.body.dataset.phase !== 'answer');
+  return sum;
+}
+
+/** Merkt sich, ob der Rückmeldung-Bereich jemals sichtbar wurde (auch für einen Augenblick). */
+const watchFeedback = (page) => page.evaluate(() => {
+  window.__feedbackShown = false;
+  const el = document.getElementById('feedback');
+  new MutationObserver(() => { if (!el.hidden) window.__feedbackShown = true; }).observe(el, { attributes: true, attributeFilter: ['hidden'] });
+});
+const feedbackShown = (page) => page.evaluate(() => window.__feedbackShown);
 
 // ---------------------------------------------------------------------------
 test.describe('Start & Darstellung', () => {
@@ -145,7 +166,6 @@ test.describe('Start & Darstellung', () => {
     await page.waitForSelector('body.ready');
     await page.click('#start-btn');
     await playNumberRound(page);
-    await page.click('#next-btn');
     await waitPhase(page, 'summary');
     await page.click('#summary-stats-btn');
     await waitPhase(page, 'stats');
@@ -204,19 +224,18 @@ test.describe('Start & Darstellung', () => {
 
 // ---------------------------------------------------------------------------
 test.describe('Spielablauf', () => {
-  test('Zahlenmodus: drei richtige Runden → Auswertung 100 %', async (t) => {
+  test('Zahlenmodus: drei richtige Runden gehen ohne Pause durch → Auswertung 100 %', async (t) => {
     const page = await open(t, { settings: { inputMode: 'number', rounds: 3 } });
+    await watchFeedback(page);
     await page.click('#start-btn');
     for (let i = 1; i <= 3; i++) {
+      await waitPhase(page, 'answer');
       assert.equal(await page.textContent('#round-label'), `Runde ${i} vo 3`);
-      const sum = await playNumberRound(page);
-      assert.equal(await page.textContent('#verdict'), 'Passt!');
-      assert.equal(await page.textContent('#equation'), L.formatEquation((await handIds(page)).map(L.cardById)));
-      assert.ok((await page.textContent('#equation')).endsWith('= ' + sum));
-      assert.ok(await page.evaluate(() => document.body.classList.contains('is-correct')));
-      assert.equal(await page.textContent('#next-btn'), i < 3 ? 'Weida' : 'Abrechna');
-      await page.click('#next-btn');
+      assert.equal(await page.textContent('#streak-label'), `Serie: ${i - 1}`);
+      await playNumberRound(page);
+      assert.equal(await page.textContent('#sr-status'), 'Passt!', 'Screenreader hört „richtig“');
     }
+    assert.equal(await feedbackShown(page), false, 'bei richtigen Antworten gibt es keinen Rückmeldung-Bildschirm');
     await waitPhase(page, 'summary');
     assert.equal(await page.textContent('#sum-accuracy'), '100 %');
     assert.equal(await page.textContent('#sum-correct'), '3 / 3');
@@ -272,8 +291,7 @@ test.describe('Spielablauf', () => {
     await waitPhase(page, 'answer');
     assert.equal(await page.locator('#hand .card.up').count(), 0);
     assert.ok(!(await page.isVisible('#hand .points-badge')));
-    await page.click('#choices button >> nth=0');
-    await waitPhase(page, 'feedback');
+    await playChoiceRound(page, { wrong: true });
     assert.equal(await page.locator('#hand .card.up').count(), 4);
   });
 
@@ -322,11 +340,12 @@ test.describe('Spielablauf', () => {
     assert.ok(!(await page.isVisible('#your-answer')));
   });
 
-  test('Zeitdruck: rechtzeitige Antwort zählt normal', async (t) => {
+  test('Zeitdruck: rechtzeitige richtige Antwort zählt und geht sofort weiter', async (t) => {
     const page = await open(t, { settings: { answerLimitEnabled: true, answerLimitSeconds: 5, inputMode: 'number' } });
     await page.click('#start-btn');
     await playNumberRound(page);
-    assert.equal(await page.textContent('#verdict'), 'Passt!');
+    assert.equal(await page.textContent('#round-label'), 'Runde 2 vo 3');
+    assert.equal(await page.textContent('#streak-label'), 'Serie: 1');
   });
 
   test('Ziffernblock: Eingabe, Löschen, höchstens zwei Stellen, Prüfen – ohne Handy-Tastatur', async (t) => {
@@ -353,8 +372,8 @@ test.describe('Spielablauf', () => {
     const sum = await handSum(page);
     for (const d of String(sum)) await page.click(`.key[data-key="${d}"]`);
     await page.click('#check-btn');
-    await waitPhase(page, 'feedback');
-    assert.equal(await page.textContent('#verdict'), 'Passt!');
+    await waitPhase(page, 'summary'); // eine Runde, richtig → direkt zur Auswertung
+    assert.equal(await page.textContent('#sum-accuracy'), '100 %');
   });
 
   test('Ziffernblock: Tasten sind für Screenreader beschriftet (in beiden Sprachen)', async (t) => {
@@ -382,12 +401,16 @@ test.describe('Spielablauf', () => {
     const page = await open(t, { settings: { gameMode: 'endless', inputMode: 'number', rounds: 1 } });
     await page.click('#start-btn');
     for (let i = 1; i <= 3; i++) {
+      await waitPhase(page, 'answer');
       assert.equal(await page.textContent('#round-label'), `Runde ${i}`);
-      await playNumberRound(page, { wrong: i === 2 });
-      assert.equal(await page.textContent('#next-btn'), 'Weida');
-      await page.click('#next-btn');
+      await playNumberRound(page, { wrong: i === 2 }); // Runde 2 absichtlich falsch → mit Rückmeldung
+      if (i === 2) {
+        assert.equal(await page.textContent('#next-btn'), 'Weida');
+        await page.click('#next-btn');
+      }
     }
     await waitPhase(page, 'reveal');
+    assert.equal(await page.textContent('#round-label'), 'Runde 4');
     await page.click('#quit-btn');
     await waitPhase(page, 'summary');
     assert.equal(await page.textContent('#sum-correct'), '2 / 3');
@@ -410,13 +433,11 @@ test.describe('Spielablauf', () => {
     const page = await open(t, { settings: { rounds: 1, inputMode: 'number' } });
     await page.click('#start-btn');
     await playNumberRound(page);
-    await page.click('#next-btn');
     await waitPhase(page, 'summary');
     await page.click('#again-btn');
     await waitPhase(page, 'reveal');
     assert.equal(await page.textContent('#round-label'), 'Runde 1 vo 1');
     await playNumberRound(page);
-    await page.click('#next-btn');
     await waitPhase(page, 'summary');
     assert.equal((await storeOf(page)).history.length, 2);
     await page.click('#summary-setup-btn');
@@ -424,18 +445,73 @@ test.describe('Spielablauf', () => {
     assert.ok(await page.isVisible('#screen-setup'));
   });
 
-  test('Tastatur: Ziffern 1–4 wählen, Enter geht weiter', async (t) => {
+  test('Tastatur: Ziffer 1–4 wählt die Antwort; richtig geht sofort weiter, bei falsch geht Enter weiter', async (t) => {
     const page = await open(t, { settings: { rounds: 2 } });
     await page.click('#start-btn');
+    // Runde 1: die richtige Antwort per Ziffer → sofort Runde 2
     await waitPhase(page, 'answer');
-    const first = await page.getAttribute('#choices button >> nth=2', 'data-value');
-    await page.keyboard.press('3');
+    const sum = await handSum(page);
+    const values = await page.$$eval('#choices button', (bs) => bs.map((b) => Number(b.dataset.value)));
+    await page.keyboard.press(String(values.indexOf(sum) + 1));
+    await page.waitForFunction(() => document.getElementById('round-label').textContent === 'Runde 2 vo 2');
+    // Runde 2: absichtlich falsch → Rückmeldung, Enter beendet das Spiel
+    await waitPhase(page, 'answer');
+    const sum2 = await handSum(page);
+    const values2 = await page.$$eval('#choices button', (bs) => bs.map((b) => Number(b.dataset.value)));
+    await page.keyboard.press(String(values2.findIndex((v) => v !== sum2) + 1));
     await waitPhase(page, 'feedback');
-    const yours = await page.textContent('#your-answer');
-    const verdict = await page.textContent('#verdict');
-    assert.ok(verdict === 'Passt!' || yours.includes(first));
+    assert.equal(await page.textContent('#verdict'), `Naa, des warn ${sum2}.`);
+    assert.equal(await page.textContent('#next-btn'), 'Abrechna');
     await page.keyboard.press('Enter');
+    await waitPhase(page, 'summary');
+    assert.equal(await page.textContent('#sum-correct'), '1 / 2');
+  });
+
+  test('Auswahlmodus: richtige Antwort → sofort nächste Runde, Serie steigt, kurzes Aufblitzen', async (t) => {
+    const page = await open(t);
+    await watchFeedback(page);
+    await page.click('#start-btn');
+    await playChoiceRound(page);
+    assert.ok(await page.evaluate(() => document.querySelector('.table').classList.contains('flash-ok')), 'Aufblitzen sofort nach der Antwort');
+    assert.equal(await page.textContent('#round-label'), 'Runde 2 vo 3');
+    assert.equal(await page.textContent('#streak-label'), 'Serie: 1');
+    assert.equal(await phase(page), 'reveal', 'Karten der nächsten Runde werden schon ausgeteilt');
+    assert.equal(await feedbackShown(page), false);
+    await page.waitForFunction(() => !document.querySelector('.table').classList.contains('flash-ok'), null, { timeout: 3000 });
+  });
+
+  test('richtig, dann falsch: bei der falschen Antwort kommt die Rückmeldung mit Rechnung, die Serie ist weg', async (t) => {
+    const page = await open(t, { settings: { rounds: 3 } });
+    await watchFeedback(page);
+    await page.click('#start-btn');
+    await playChoiceRound(page); // richtig → weiter
+    assert.equal(await feedbackShown(page), false);
+    const sum = await playChoiceRound(page, { wrong: true });
+    assert.equal(await feedbackShown(page), true);
+    assert.equal(await page.textContent('#verdict'), `Naa, des warn ${sum}.`);
+    assert.equal(await page.textContent('#equation'), L.formatEquation((await handIds(page)).map(L.cardById)));
+    assert.equal(await page.textContent('#streak-label'), 'Serie: 0');
+    assert.equal(await page.textContent('#sr-status'), '', 'keine „richtig“-Ansage bei falscher Antwort');
+    await page.click('#next-btn');
     await waitPhase(page, 'reveal');
+    assert.equal(await page.textContent('#round-label'), 'Runde 3 vo 3');
+  });
+
+  test('letzte Runde: richtig → direkt Auswertung; falsch → erst die Rechnung, dann Auswertung', async (t) => {
+    const right = await open(t, { settings: { rounds: 1 } });
+    await right.click('#start-btn');
+    await playChoiceRound(right);
+    await waitPhase(right, 'summary');
+    assert.equal(await right.textContent('#sum-accuracy'), '100 %');
+
+    const wrong = await open(t, { settings: { rounds: 1 } });
+    await wrong.click('#start-btn');
+    await playChoiceRound(wrong, { wrong: true });
+    assert.equal(await wrong.textContent('#next-btn'), 'Abrechna');
+    assert.equal(await phase(wrong), 'feedback');
+    await wrong.click('#next-btn');
+    await waitPhase(wrong, 'summary');
+    assert.equal(await wrong.textContent('#sum-accuracy'), '0 %');
   });
 
   test('gleicher Seed → gleiche Karten (reproduzierbar)', async (t) => {

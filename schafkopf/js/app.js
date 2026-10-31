@@ -402,7 +402,36 @@
     state.session = L.recordAnswer(state.session, { cards: state.hand, answer: value, timedOut: !!timedOut, timeMs: timeMs });
     var last = state.session.answers[state.session.answers.length - 1];
     go(timedOut ? 'TIMEOUT' : 'ANSWER');
-    showFeedback(last);
+    // Richtig → ohne Umweg weiter (oder Ende); falsch / Zeit abgelaufen → erst die Rechnung zeigen
+    var step = L.afterAnswerStep(settings(), state.session.answers.length, last.isCorrect);
+    if (step === 'FEEDBACK') {
+      $('#sr-status').textContent = '';
+      showFeedback(last);
+      return;
+    }
+    playCorrect();
+    vibrate(30);
+    $('#sr-status').textContent = tr('correct');
+    if (step === 'FINISH') {
+      finishSession('FINISH');
+      return;
+    }
+    startRound();
+    flashOk();
+  }
+
+  /** Kurzes grünes Aufblitzen + Serienzähler, damit man auch ohne Rückmeldung-Bildschirm sieht: richtig! */
+  function flashOk() {
+    var table = $('.table');
+    var streak = $('#streak-label');
+    [table, streak].forEach(function (el) { el.classList.remove('flash-ok', 'pulse'); });
+    void table.offsetWidth; // Animation neu starten
+    table.classList.add('flash-ok');
+    streak.classList.add('pulse');
+    window.setTimeout(function () {
+      table.classList.remove('flash-ok');
+      streak.classList.remove('pulse');
+    }, 700);
   }
 
   function showFeedback(record) {

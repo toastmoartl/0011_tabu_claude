@@ -344,6 +344,22 @@ test.describe('Zustandsmaschine', () => {
     assert.equal(L.afterFeedbackEvent({ gameMode: 'rounds', rounds: 3 }, 3), 'FINISH');
     assert.equal(L.afterFeedbackEvent({ gameMode: 'endless', rounds: 3 }, 300), 'NEXT');
   });
+
+  test('nach einer Antwort: richtig → sofort weiter, falsch oder Zeit abgelaufen → erst Rückmeldung', () => {
+    const rounds = { gameMode: 'rounds', rounds: 3 };
+    assert.equal(L.afterAnswerStep(rounds, 1, true), 'NEXT');
+    assert.equal(L.afterAnswerStep(rounds, 2, true), 'NEXT');
+    assert.equal(L.afterAnswerStep(rounds, 3, true), 'FINISH', 'letzte richtige Antwort beendet das Spiel direkt');
+    assert.equal(L.afterAnswerStep(rounds, 1, false), 'FEEDBACK');
+    assert.equal(L.afterAnswerStep(rounds, 3, false), 'FEEDBACK', 'auch in der letzten Runde zuerst die Rechnung zeigen');
+    const endless = { gameMode: 'endless', rounds: 1 };
+    assert.equal(L.afterAnswerStep(endless, 500, true), 'NEXT');
+    assert.equal(L.afterAnswerStep(endless, 500, false), 'FEEDBACK');
+  });
+
+  test('jede Antwort-Entscheidung passt zur Zustandsmaschine (feedback → NEXT/FINISH ist erlaubt)', () => {
+    for (const step of ['NEXT', 'FINISH']) assert.ok(L.canTransition('feedback', step), step);
+  });
 });
 
 // ---------------------------------------------------------------------------

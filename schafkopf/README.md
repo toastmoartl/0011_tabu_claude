@@ -25,6 +25,11 @@ Ton · Vibration · Tag/Abend/Automatisch · Boarisch/Hochdeutsch.
 
 Tastatur: `1`–`4` wählt eine Antwort, `Enter` geht weiter.
 
+**Richtig → sofort weiter:** Eine richtige Antwort bringt dich ohne Umweg in die nächste Runde
+(Ton, Vibration, grünes Aufblitzen und der Serienzähler zeigen: richtig). Nur bei einer **falschen
+Antwort** oder wenn die **Zeit abläuft** erscheint die Rückmeldung mit der Rechnung
+(`11 + 10 + 3 + 0 = 24`). Die letzte richtige Antwort führt direkt zur Auswertung.
+
 ## Bildschirmgrößen
 
 Das Spiel ist für Handys im Hochformat gebaut, vor allem das Samsung Galaxy S23 (360×780 CSS-Pixel,

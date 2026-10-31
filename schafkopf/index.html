@@ -385,9 +385,22 @@
     .paper h3 { margin: 4px 0 3px; }
   }
 
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* „Richtig!“ ohne eigenen Bildschirm: grünes Aufblitzen am Spieltisch + Serienzähler pulsiert */
+  .table { position: relative; }
+  .table.flash-ok::after {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    box-shadow: inset 0 0 56px 10px rgba(160, 255, 120, .8); animation: ok-flash .6s ease-out forwards;
+  }
+  @keyframes ok-flash { from { opacity: 1; } to { opacity: 0; } }
+  #streak-label.pulse { display: inline-block; animation: streak-pulse .5s ease-out; color: #c6ff9f; }
+  @keyframes streak-pulse { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
+
   @media (prefers-reduced-motion: reduce) {
     .card-inner, .btn, .coaster, .switch, .switch::after { transition: none !important; }
-    .shake { animation: none; }
+    .shake, .table.flash-ok::after, #streak-label.pulse { animation: none; }
+    .table.flash-ok::after { opacity: 0; }
   }
 </style>
 </head>
@@ -411,6 +424,7 @@
 
     <!-- Spiel -->
     <section class="screen" data-screen="play" id="screen-play" hidden>
+      <p class="sr-only" id="sr-status" role="status"></p>
       <div class="hud">
         <span id="round-label"></span>
         <span id="streak-label"></span>
