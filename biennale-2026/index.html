@@ -264,8 +264,10 @@ const ORTE = ["Alle", "Giardini", "Arsenale", "Stadt"];
 
 PAVILIONS.forEach(p => {
   p.id = slug(p.land);
-  if (p.ort === "Giardini") [p.lat, p.lng] = GIARDINI;
-  if (p.ort === "Arsenale") [p.lat, p.lng] = ARSENALE;
+  // Eigene Koordinaten bei Giardini/Arsenale = eigener Marker (z. B. Armenien, Tesa 41)
+  p.eigen = p.ort !== "Stadt" && p.lat != null;
+  if (p.lat == null && p.ort === "Giardini") [p.lat, p.lng] = GIARDINI;
+  if (p.lat == null && p.ort === "Arsenale") [p.lat, p.lng] = ARSENALE;
   p.weitere = p.weitere || 0;
   p.hay = norm([p.land, p.titel, p.kuenstler.join(" ")].join(" "));
 });
@@ -505,8 +507,8 @@ function groups() {
   const g = new Map();
   filtered().forEach(p => {
     if (p.lat == null) return;
-    const key = p.ort === "Stadt" ? `${p.lat.toFixed(5)},${p.lng.toFixed(5)}` : p.ort;
-    if (!g.has(key)) g.set(key, { name: p.ort === "Stadt" ? p.adresse : p.ort, lat: p.lat, lng: p.lng, items: [] });
+    const key = (p.ort === "Stadt" || p.eigen) ? `${p.lat.toFixed(5)},${p.lng.toFixed(5)}` : p.ort;
+    if (!g.has(key)) g.set(key, { name: (p.ort === "Stadt" || p.eigen) ? p.adresse : p.ort, lat: p.lat, lng: p.lng, items: [] });
     g.get(key).items.push(p);
   });
   return [...g.values()];
