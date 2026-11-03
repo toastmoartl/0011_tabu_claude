@@ -5,6 +5,7 @@
  *
  *   <out>/index.html          Startseite mit Link zum Spiel
  *   <out>/schafkopf/          Schafkopf-Trainer (nur index.html, js/, assets/ – keine Tests)
+ *   <out>/biennale-2026/      Biennale-Pavillons bewerten (eine index.html, ohne Build-Schritt)
  *   <out>/.nojekyll           Pages soll die Dateien unverändert ausliefern
  *
  * Veröffentlicht wird ausschließlich diese Auswahl (Whitelist). Das Tabu-Spiel im
@@ -31,6 +32,8 @@ function buildSite(outArg) {
 
   fs.copyFileSync(path.join(ROOT, 'site', 'index.html'), path.join(out, 'index.html'));
   for (const f of GAME_FILES) copyRecursive(path.join(ROOT, 'schafkopf', f), path.join(out, 'schafkopf', f));
+  fs.mkdirSync(path.join(out, 'biennale-2026'));
+  fs.copyFileSync(path.join(ROOT, 'biennale-2026', 'index.html'), path.join(out, 'biennale-2026', 'index.html'));
   fs.writeFileSync(path.join(out, '.nojekyll'), '');
 
   return out;

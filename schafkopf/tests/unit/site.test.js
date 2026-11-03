@@ -27,8 +27,8 @@ test.describe('Auslieferungs-Mappe für GitHub Pages', () => {
   });
   test.after(() => fs.rmSync(path.dirname(out), { recursive: true, force: true }));
 
-  test('enthält Startseite, Schafkopf-Trainer und .nojekyll', () => {
-    for (const f of ['index.html', 'schafkopf/index.html', '.nojekyll']) {
+  test('enthält Startseite, Schafkopf-Trainer, Biennale-Seite und .nojekyll', () => {
+    for (const f of ['index.html', 'schafkopf/index.html', 'biennale-2026/index.html', '.nojekyll']) {
       assert.ok(fs.existsSync(path.join(out, f)), f);
     }
   });
@@ -84,7 +84,8 @@ test.describe('Auslieferungs-Mappe für GitHub Pages', () => {
   });
 
   test('Datenschutz: keine externen Adressen in Seiten, Skripten oder Grafiken', () => {
-    const text = walk(out).filter((f) => /\.(html|js|svg|css)$/.test(f));
+    // Die Biennale-Seite braucht Karte und Schriften von außen; sie hat einen eigenen Test (siehe unten).
+    const text = walk(out).filter((f) => /\.(html|js|svg|css)$/.test(f) && !f.startsWith('biennale-2026/'));
     assert.equal(text.length, 2 + 3 + 24, 'geprüft werden 2 Seiten, 3 Skripte und 24 Karten');
     for (const f of text) {
       const src = fs.readFileSync(path.join(out, f), 'utf8');
@@ -93,6 +94,14 @@ test.describe('Auslieferungs-Mappe für GitHub Pages', () => {
       assert.deepEqual(urls, [], `${f}: externe Adresse(n)`);
       assert.ok(!/@import|googleapis|gstatic|cdn\./i.test(src), `${f}: Verweis auf Schriften-/CDN-Dienst`);
     }
+  });
+
+  test('Biennale-Seite: externe Adressen nur zu Google Fonts, unpkg (Leaflet) und OpenStreetMap', () => {
+    const src = fs.readFileSync(path.join(out, 'biennale-2026/index.html'), 'utf8');
+    const hosts = new Set([...src.matchAll(/https?:\/\/([\w.-]+\.[a-z]{2,})/gi)].map((m) => m[1].replace(/^\{s\}\./, '')));
+    const allowed = ['fonts.googleapis.com', 'fonts.gstatic.com', 'unpkg.com', 'tile.openstreetmap.org', 'www.openstreetmap.org', 'biennialfoundation.org'];
+    assert.deepEqual([...hosts].filter((h) => !allowed.includes(h)), []);
+    assert.ok(!/(?:href|src)="\/(?!\/)/.test(src), 'absoluter Pfad mit /');
   });
 
   test('Schriften liegen lokal: @font-face zeigt auf echte WOFF2-Dateien, Lizenztexte liegen dabei', () => {

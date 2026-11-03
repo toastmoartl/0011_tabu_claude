@@ -287,7 +287,7 @@ const PAVILIONS = [
   {id: "gtm", land: "Guatemala", titel: "LAS INVISIBLES", kuenstler: ["ARKEO","Luana Bottallo","Jorge Chavarría","Manuel Navichoc","Ana Lorena Núñez","SOY artistic group","Elsie Wunderlich"], ort: "Stadt", adresse: "Spazio Berlendis, Cannaregio 6301", lat: 45.4415, lng: 12.3412, a: true},
   {id: "gin", land: "Guinea", titel: "Le Son de l’Art: l’Écho de la Matière", kuenstler: ["Bella Bah","Bachir Diallo","King Emmanuel","Sékou Oumar Thiam","Francesco Tullio Altan","Tommaso Cascella"], weitere: 58, ort: "Stadt", adresse: "Isola di San Servolo", lat: 45.422, lng: 12.357, a: true, neu: true},
   {id: "hti", land: "Haiti", titel: "Yelena’s Garden, 2025-2026", kuenstler: ["Enock Placide"], ort: "Stadt", adresse: "Palazzo Albrizzi-Capello, Cannaregio 4118", lat: 45.4425, lng: 12.336, a: true},
-  {id: "vat", land: "Heiliger Stuhl", titel: "The Ear is the Eye of the Soul", kuenstler: ["Soundwalk Collective"], ort: "Stadt", adresse: "Complesso di Santa Maria Ausiliatrice, Castello 450, und Giardino Mistico dei Carmelitani Scalzi, Cannaregio", lat: 45.4305, lng: 12.357, a: true},
+  {id: "vat", land: "Heiliger Stuhl", titel: "The Ear is the Eye of the Soul", kuenstler: ["Soundwalk Collective"], ort: "Stadt", adresse: "Complesso di Santa Maria Ausiliatrice, Castello 450, und Giardino Mistico dei Carmelitani Scalzi, Cannaregio", lat: 45.4305, lng: 12.357, a: true, markerAdresse: "Complesso di Santa Maria Ausiliatrice, Castello 450", zweit: {adresse: "Giardino Mistico dei Carmelitani Scalzi, Cannaregio", lat: 45.4418, lng: 12.3222}},
   {id: "hun", land: "Ungarn", titel: "Pneuma Cosmic", kuenstler: ["Endre Koronczi"], ort: "Giardini", adresse: "Giardini"},
   {id: "isl", land: "Island", titel: "Pocket Universe", kuenstler: ["Ásta Fanney Sigurðardóttir"], ort: "Stadt", adresse: "Docks Cantieri Cucchini, San Pietro di Castello", lat: 45.4335, lng: 12.3605, a: true},
   {id: "ind", land: "Indien", titel: "Geographies of Distance: remembering home", kuenstler: ["Alwar Balasubramaniam","Sumakshi Singh","Ranjani Shettar","Asim Waqif","Skarma Sonam Tashi"], ort: "Arsenale", adresse: "Arsenale"},
@@ -322,7 +322,7 @@ const PAVILIONS = [
   {id: "pol", land: "Polen", titel: "Liquid Tongues", kuenstler: ["Bogna Burska","Daniel Kotowski"], ort: "Giardini", adresse: "Giardini"},
   {id: "prt", land: "Portugal", titel: "RedSkyFalls", kuenstler: ["Alexandre Estrela"], ort: "Stadt", adresse: "Fondaco Marcello", lat: 45.4425, lng: 12.329, a: true},
   {id: "qat", land: "Katar", titel: "Untitled (a gathering of remarkable people)", kuenstler: ["Rirkrit Tiravanija","Sophia Al Maria","Tarek Atoui","Alia Farid","Fadi Kattan"], ort: "Giardini", adresse: "Giardini", neu: true},
-  {id: "rou", land: "Rumänien", titel: "Black Seas – Scores for the Sonic Eye", kuenstler: ["Anca Benera","Arnold Estefán"], ort: "Giardini", adresse: "Giardini und New Gallery, Palazzo Correr, Campo Santa Fosca, Cannaregio 2214"},
+  {id: "rou", land: "Rumänien", titel: "Black Seas – Scores for the Sonic Eye", kuenstler: ["Anca Benera","Arnold Estefán"], ort: "Giardini", adresse: "Giardini und New Gallery, Palazzo Correr, Campo Santa Fosca, Cannaregio 2214", zweit: {adresse: "New Gallery, Palazzo Correr, Campo Santa Fosca, Cannaregio 2214", lat: 45.4428, lng: 12.3338}},
   {id: "rus", land: "Russland", titel: "The tree is rooted in the sky", kuenstler: ["Alexey Retinsky","Intrada Ensemble","Toloka Ensemble","Phurpa","Alexey Sysoev","Maria Vinogradova"], ort: "Giardini", adresse: "Giardini"},
   {id: "smr", land: "San Marino", titel: "Sea of Sound", kuenstler: ["Mark Francis"], ort: "Stadt", adresse: "Tana Art Space, Fondamenta de la Tana 2111", lat: 45.4325, lng: 12.353, a: true},
   {id: "sau", land: "Saudi-Arabien", titel: "May your tears never dry, you who weep over stones", kuenstler: ["Dana Awartani"], ort: "Arsenale", adresse: "Arsenale"},
@@ -335,7 +335,7 @@ const PAVILIONS = [
   {id: "esp", land: "Spanien", titel: "LOS RESTOS", kuenstler: ["Oriol Vilanova"], ort: "Giardini", adresse: "Giardini"},
   {id: "che", land: "Schweiz", titel: "The Unfinished Business of Living Together", kuenstler: ["Miriam Laura Leonardi","Lithic Alliance","Yul Tomatala","Nina Wakeford"], ort: "Giardini", adresse: "Giardini"},
   {id: "syr", land: "Syrien", titel: "The Tower Tomb of Palmira", kuenstler: ["Sara Shamma"], ort: "Stadt", adresse: "Università IUAV, Cotonificio, Dorsoduro 2196", lat: 45.4345, lng: 12.3165, a: true},
-  {id: "tza", land: "Tansania", titel: "Minor Frequencies: The Inner Life Of A Nation", kuenstler: ["Amani Abeid","Valerie Asiimwe Amani","Turakella Editha Gyindo","Lazaro Samuel"], weitere: 31, ort: "Stadt", adresse: "Gervasuti Foundation, Palazzo Canova, Cannaregio 4998-5001/A, und Supernova, Cannaregio 3218/A", lat: 45.442, lng: 12.3378, a: true},
+  {id: "tza", land: "Tansania", titel: "Minor Frequencies: The Inner Life Of A Nation", kuenstler: ["Amani Abeid","Valerie Asiimwe Amani","Turakella Editha Gyindo","Lazaro Samuel"], weitere: 31, ort: "Stadt", adresse: "Gervasuti Foundation, Palazzo Canova, Cannaregio 4998-5001/A, und Supernova, Cannaregio 3218/A", lat: 45.442, lng: 12.3378, a: true, markerAdresse: "Gervasuti Foundation, Palazzo Canova, Cannaregio 4998-5001/A", zweit: {adresse: "Supernova, Cannaregio 3218/A", lat: 45.4447, lng: 12.3290}},
   {id: "tls", land: "Timor-Leste", titel: "Across Words", kuenstler: ["Veronica Pereira Maia","Etson Caminha","Juventino Madeira"], ort: "Arsenale", adresse: "Arsenale"},
   {id: "tur", land: "Türkei", titel: "A KISS ON THE EYES", kuenstler: ["Nilbar Güreş"], ort: "Arsenale", adresse: "Arsenale"},
   {id: "ukr", land: "Ukraine", titel: "Security Guarantees", kuenstler: ["Zhanna Kadyrova"], ort: "Arsenale", adresse: "Arsenale, Riva Ca’ di Dio"},
@@ -595,13 +595,23 @@ function afterNames() { fixActive(); save(); update(); }
 
 /* ===================== Karte ===================== */
 let map = null, markerLayer = null, meMarker = null;
+// Ein Pavillon kann zwei Standorte haben (zweit); er erscheint dann an beiden Markern.
 function groups() {
   const g = new Map();
+  const put = (key, name, lat, lng, entry) => {
+    if (!g.has(key)) g.set(key, { name, lat, lng, items: [] });
+    g.get(key).items.push(entry);
+  };
   filtered().forEach(p => {
-    if (p.lat == null) return;
-    const key = (p.ort === "Stadt" || p.eigen) ? `${p.lat.toFixed(5)},${p.lng.toFixed(5)}` : p.ort;
-    if (!g.has(key)) g.set(key, { name: (p.ort === "Stadt" || p.eigen) ? p.adresse : p.ort, lat: p.lat, lng: p.lng, items: [] });
-    g.get(key).items.push(p);
+    if (p.lat != null) {
+      const own = p.ort === "Stadt" || p.eigen;
+      const adr = p.markerAdresse || p.adresse;
+      put(own ? `${p.lat.toFixed(5)},${p.lng.toFixed(5)}` : p.ort, own ? adr : p.ort, p.lat, p.lng, { p, adr: own ? adr : p.ort });
+    }
+    if (p.zweit) {
+      const z = p.zweit;
+      put(`${z.lat.toFixed(5)},${z.lng.toFixed(5)}`, z.adresse, z.lat, z.lng, { p, adr: z.adresse, zweit: true });
+    }
   });
   return [...g.values()];
 }
@@ -624,15 +634,15 @@ function renderMarkers() {
   markerLayer.clearLayers();
   const gs = groups();
   gs.forEach(g => {
-    const done = g.items.every(p => state.visited[p.id]);
+    const done = g.items.every(e => state.visited[e.p.id]);
     const n = g.items.length;
     const icon = L.divIcon({
       className: "", iconSize: n > 1 ? [34, 34] : [26, 26],
       html: `<div class="mk${done ? " done" : ""}${n > 1 ? "" : " solo"}">${n > 1 ? n : (done ? "✓" : "1")}</div>`
     });
-    const mixed = new Set(g.items.map(p => p.adresse)).size > 1;
-    const html = `<div class="pop"><h3>${esc(mixed ? "Mehrere Orte nah beieinander" : g.name)}</h3><ul>${g.items.map(p =>
-      `<li><span>${state.visited[p.id] ? "<b>✓</b> " : ""}${esc(p.land)}${mixed ? `<small>${esc(p.adresse)}</small>` : ""}</span><button type="button" data-rate="${p.id}">Bewerten</button></li>`).join("")}</ul></div>`;
+    const mixed = new Set(g.items.map(e => e.adr)).size > 1;
+    const html = `<div class="pop"><h3>${esc(mixed ? "Mehrere Orte nah beieinander" : g.name)}</h3><ul>${g.items.map(({ p, adr, zweit }) =>
+      `<li><span>${state.visited[p.id] ? "<b>✓</b> " : ""}${esc(p.land)}${zweit ? " (2. Standort)" : ""}${mixed ? `<small>${esc(adr)}</small>` : ""}</span><button type="button" data-rate="${p.id}">Bewerten</button></li>`).join("")}</ul></div>`;
     L.marker([g.lat, g.lng], { icon, title: `${g.name}: ${n} Pavillon${n > 1 ? "s" : ""}` }).bindPopup(html, { maxWidth: 300 }).addTo(markerLayer);
   });
   if (gs.length && !renderMarkers.fitted) {
