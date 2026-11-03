@@ -169,6 +169,7 @@
   .pop ul { list-style: none; margin: 0; padding: 0; max-height: 46vh; overflow: auto; }
   .pop li { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-top: 1px solid #dde7e4; }
   .pop li span { flex: 1; }
+  .pop li small { display: block; color: #55706D; font-size: 12px; }
   .pop li b { color: #B8901C; }
   .pop button { min-height: 38px; padding: 0 10px; border-radius: 19px; border: 1.5px solid #0F5257; background: #fff; color: #0F5257; font-weight: 600; }
   .locate { position: absolute; z-index: 500; right: 12px; bottom: calc(24px + env(safe-area-inset-bottom)); }
@@ -243,55 +244,108 @@
  * Quelle: biennialfoundation.org – National Pavilions and Collateral Events at the Venice Biennale 2026.
  * ort: "Giardini" | "Arsenale" | "Stadt"; lat/lng: Standort des Eingangs.
  */
-const DATA_COMPLETE = false;
+const DATA_COMPLETE = true;
 const GIARDINI = [45.42870, 12.35780];
 const ARSENALE = [45.43380, 12.35130];
 const PAVILIONS = [
-  // Teil 1: Albanien bis Haiti. a: true = Koordinaten geschätzt
-  { land: "Albanien", titel: "A Place in the Sun", kuenstler: ["Genti Korini"], ort: "Arsenale", adresse: "Arsenale" },
-  { land: "Argentinien", titel: "MONITOR YIN YANG", kuenstler: ["Matías Duville"], ort: "Arsenale", adresse: "Arsenale" },
-  { land: "Armenien", titel: "The Studio", kuenstler: ["Zadik Zadikian"], ort: "Arsenale", adresse: "Fondamenta Case Nuove 2738/C, Castello, Tesa 41, Arsenale Militare", lat: 45.4372, lng: 12.35, a: true },
-  { land: "Australien", titel: "conference of one’s self", kuenstler: ["Khaled Sabsabi"], ort: "Giardini", adresse: "Giardini" },
-  { land: "Österreich", titel: "Seaworld Venice", kuenstler: ["Florentina Holzinger"], ort: "Giardini", adresse: "Giardini" },
-  { land: "Aserbaidschan", titel: "The Attention", kuenstler: ["Faig Ahmed"], ort: "Stadt", adresse: "Campo della Tana, Castello 2124/A, Castello 2125", lat: 45.4325, lng: 12.353, a: true },
-  { land: "Bahamas", titel: "In Another Man’s Yard: John Beadle, Lavar Munroe, and the Spirit of (Posthumous) Collaboration", kuenstler: ["John Beadle", "Lavar Munroe"], ort: "Stadt", adresse: "San Trovaso Art Space, Dorsoduro 947", lat: 45.431, lng: 12.327, a: true },
-  { land: "Belgien", titel: "IT NEVER SSST", kuenstler: ["Miet Warlop"], ort: "Giardini", adresse: "Giardini" },
-  { land: "Bosnien und Herzegowina", titel: "Domus Diasporica", kuenstler: ["Mladen Bundalo"], ort: "Stadt", adresse: "Palazzo Malipiero, San Marco 3198", lat: 45.4335, lng: 12.3285, a: true },
-  { land: "Brasilien", titel: "Comigo ninguém pode", kuenstler: ["Rosana Paulino", "Adriana Varejão"], ort: "Giardini", adresse: "Giardini" },
-  { land: "Bulgarien", titel: "The Federation of Minor Practices", kuenstler: ["Gery Georgieva", "Maria Nalbantova", "Rayna Teneva", "Veneta Androva"], ort: "Stadt", adresse: "Sala Tiziano, Centro Culturale Don Orione Artigianelli, Fondamenta delle Zattere ai Gesuiti 919", lat: 45.4295, lng: 12.3262, a: true },
-  { land: "Kamerun", titel: "NZƎNDA", kuenstler: ["Beya Gille Gacha", "Jail Time Records", "Sylvie Njobati", "Bienvenue Fotso", "Zora Snake", "Neals Niat"], ort: "Stadt", adresse: "Palazzo Canal, Dorsoduro 3121", lat: 45.4335, lng: 12.3245, a: true },
-  { land: "Kanada", titel: "Abbas Akhavan: Entre chien et loup", kuenstler: ["Abbas Akhavan"], ort: "Giardini", adresse: "Giardini" },
-  { land: "Tschechien und Slowakei", titel: "The Silence of the Mole", kuenstler: ["Jakub Jansa", "Selmeci Kocka Jusko"], ort: "Giardini", adresse: "Giardini" },
-  { land: "Chile", titel: "Inter-Reality", kuenstler: ["Norton Maza"], ort: "Arsenale", adresse: "Arsenale" },
-  { land: "China", titel: "Dream Stream", kuenstler: ["Game Science", "Feng Ji", "Yang Qi", "Liu Chenglong", "Xu Jiang", "Wang Dongling", "Yang Fudong", "Zhang Zhoujie"], weitere: 14, ort: "Arsenale", adresse: "Arsenale" },
-  { land: "DR Kongo", titel: "Simba Moto! Seize the fire! Saisis le feu!", kuenstler: ["Sammy Baloji", "Arlette Bashizi", "Patrick Bongoy", "Damso", "Gosette Lubondo", "Nelson Makengo", "Aimé Mpané", "Léonard Pongo", "Géraldine Tobé"], ort: "Stadt", adresse: "Antico Refettorio, Scuola Grande di San Marco", lat: 45.4395, lng: 12.3415, a: true },
-  { land: "Kroatien", titel: "Compelled by Fright and Beauty", kuenstler: ["Dubravka Lošić"], ort: "Stadt", adresse: "Palazzo Zorzi, Salizada Zorzi 4930", lat: 45.4355, lng: 12.341, a: true },
-  { land: "Kuba", titel: "Hombres Libres / Free men", kuenstler: ["Juan Roberto Diago Durruthy"], ort: "Stadt", adresse: "Il Giardino Bianco Art Space, Via Giuseppe Garibaldi, Castello 1814", lat: 45.4318, lng: 12.355, a: true },
-  { land: "Zypern", titel: "It rests to the bones", kuenstler: ["Marina Xenofontos"], ort: "Stadt", adresse: "Associazione Culturale Spiazzi, Castello 3865", lat: 45.4345, lng: 12.346, a: true },
-  { land: "Dänemark", titel: "Things to Come", kuenstler: ["Maja Malou Lyse"], ort: "Giardini", adresse: "Giardini" },
-  { land: "Ecuador", titel: "TAWNA & Oscar", kuenstler: ["TAWNA collective", "Oscar Santillán"], ort: "Stadt", adresse: "Castello 1636/A", lat: 45.4328, lng: 12.3545, a: true },
-  { land: "El Salvador", titel: "Cartographies of the Displaced", kuenstler: ["José Oscar Molina"], ort: "Stadt", adresse: "Palazzo Mora, Cannaregio 3659", lat: 45.441, lng: 12.333, a: true },
-  { land: "Ägypten", titel: "Silence Pavilion: Between the Tangible and the Intangible", kuenstler: ["Armen Agop"], ort: "Giardini", adresse: "Giardini" },
-  { land: "Estland", titel: "The House of Leaking Sky", kuenstler: ["Merike Estna"], ort: "Stadt", adresse: "Calle S. Domenico 1285, Castello", lat: 45.431, lng: 12.3555, a: true },
-  { land: "Äquatorialguinea", titel: "The Forest – The Undergrowth", kuenstler: ["Fernando Nguema Madja", "Modest Gené Roig", "Rani Bruchstein", "Barbara Cammarata"], weitere: 19, ort: "Stadt", adresse: "Palazzo Donà dalle Rose, Cannaregio 5038/5101", lat: 45.4425, lng: 12.3392, a: true },
-  { land: "Äthiopien", titel: "Shapes of Silence", kuenstler: ["Tegene Kunbi"], ort: "Stadt", adresse: "Palazzo Bollani, Castello 3647", lat: 45.4346, lng: 12.345, a: true },
-  { land: "Finnland (Aalto-Pavillon)", titel: "Aeolian Suite", kuenstler: ["Jenna Sutela"], ort: "Giardini", adresse: "Giardini" },
-  { land: "Frankreich", titel: "Comme Saturne", kuenstler: ["Yto Barrada"], ort: "Giardini", adresse: "Giardini" },
-  { land: "Georgien", titel: "Modern Argonauts – Georgian Crossroads", kuenstler: ["Tatia Darchiashvili", "Konstantin Mindadze", "Guram Nikoladze", "Nestan Mikeladze"], weitere: 13, ort: "Stadt", adresse: "Palazzo Querini, Calle Lunga San Barnaba 2691, Dorsoduro", lat: 45.4318, lng: 12.3255, a: true },
-  { land: "Deutschland", titel: "Ruin", kuenstler: ["Henrike Naumann", "Sung Tieu"], ort: "Giardini", adresse: "Giardini" },
-  { land: "Luxemburg", titel: "La Merde", kuenstler: ["Aline Bouvy"], ort: "Arsenale", adresse: "Arsenale" },
-  { land: "Großbritannien", titel: "Predicting History: Testing Translation", kuenstler: ["Lubaina Himid"], ort: "Giardini", adresse: "Giardini" },
-  { land: "Griechenland", titel: "ESCAPE ROOM", kuenstler: ["Andreas Angelidakis"], ort: "Giardini", adresse: "Giardini" },
-  { land: "Grenada", titel: "The Poetics of Correspondence", kuenstler: ["Edward Bowen", "Arthur Daniel", "Josine Dupont", "Alexandra Kordas", "Lilo Nido and Chris Mast", "Jeverson Ramirez", "The Holzwege Group", "Russell Watson"], ort: "Stadt", adresse: "Spazio Berlendis, Cannaregio 6301/A", lat: 45.4415, lng: 12.3412, a: true },
-  { land: "Guatemala", titel: "LAS INVISIBLES", kuenstler: ["ARKEO", "Luana Bottallo", "Jorge Chavarría", "Manuel Navichoc", "Ana Lorena Núñez", "SOY artistic group", "Elsie Wunderlich"], ort: "Stadt", adresse: "Spazio Berlendis, Cannaregio 6301", lat: 45.4415, lng: 12.3412, a: true },
-  { land: "Guinea", titel: "Le Son de l’Art: l’Écho de la Matière", kuenstler: ["Bella Bah", "Bachir Diallo", "King Emmanuel", "Sékou Oumar Thiam", "Francesco Tullio Altan", "Tommaso Cascella"], weitere: 58, ort: "Stadt", adresse: "Isola di San Servolo", lat: 45.422, lng: 12.357, a: true },
-  { land: "Haiti", titel: "Yelena’s Garden, 2025-2026", kuenstler: ["Enock Placide"], ort: "Stadt", adresse: "Palazzo Albrizzi-Capello, Cannaregio 4118", lat: 45.4425, lng: 12.336, a: true },
-
-  // Noch aus der Vorschau (folgen vollständig mit Teil 2):
-  { land: "Japan", titel: "", kuenstler: ["Ei Arakawa-Nash"], ort: "Giardini", adresse: "Giardini" },
-  { land: "Korea", titel: "Liberation Space: Fortress/Nest", kuenstler: ["Goen Choi", "Hyeree Ro"], ort: "Giardini", adresse: "Giardini" },
-  { land: "Philippinen", titel: "Sea of Love", kuenstler: ["Jon Cuyson"], ort: "Arsenale", adresse: "Arsenale" },
-  { land: "Syrien", titel: "The Tower Tomb of Palmyra", kuenstler: [], ort: "Stadt", adresse: "Università Iuav, Cotonificio Veneziano, Dorsoduro 2196", lat: 45.43405, lng: 12.31890, a: true },
+  // 97 Länderpavillons. a: true = Koordinaten aus der Adresse geschätzt, neu: erste Teilnahme
+  {id: "alb", land: "Albanien", titel: "A Place in the Sun", kuenstler: ["Genti Korini"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "arg", land: "Argentinien", titel: "MONITOR YIN YANG", kuenstler: ["Matías Duville"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "arm", land: "Armenien", titel: "The Studio", kuenstler: ["Zadik Zadikian"], ort: "Arsenale", adresse: "Fondamenta Case Nuove 2738/C, Castello, Tesa 41, Arsenale Militare", lat: 45.4372, lng: 12.35, a: true},
+  {id: "aus", land: "Australien", titel: "conference of one’s self", kuenstler: ["Khaled Sabsabi"], ort: "Giardini", adresse: "Giardini"},
+  {id: "aut", land: "Österreich", titel: "Seaworld Venice", kuenstler: ["Florentina Holzinger"], ort: "Giardini", adresse: "Giardini"},
+  {id: "aze", land: "Aserbaidschan", titel: "The Attention", kuenstler: ["Faig Ahmed"], ort: "Stadt", adresse: "Campo della Tana, Castello 2124/A, Castello 2125", lat: 45.4325, lng: 12.353, a: true},
+  {id: "bhs", land: "Bahamas", titel: "In Another Man’s Yard: John Beadle, Lavar Munroe, and the Spirit of (Posthumous) Collaboration", kuenstler: ["John Beadle","Lavar Munroe"], ort: "Stadt", adresse: "San Trovaso Art Space, Dorsoduro 947", lat: 45.431, lng: 12.327, a: true},
+  {id: "bel", land: "Belgien", titel: "IT NEVER SSST", kuenstler: ["Miet Warlop"], ort: "Giardini", adresse: "Giardini"},
+  {id: "bih", land: "Bosnien und Herzegowina", titel: "Domus Diasporica", kuenstler: ["Mladen Bundalo"], ort: "Stadt", adresse: "Palazzo Malipiero, San Marco 3198", lat: 45.4335, lng: 12.3285, a: true},
+  {id: "bra", land: "Brasilien", titel: "Comigo ninguém pode", kuenstler: ["Rosana Paulino","Adriana Varejão"], ort: "Giardini", adresse: "Giardini"},
+  {id: "bgr", land: "Bulgarien", titel: "The Federation of Minor Practices", kuenstler: ["Gery Georgieva","Maria Nalbantova","Rayna Teneva","Veneta Androva"], ort: "Stadt", adresse: "Sala Tiziano, Centro Culturale Don Orione Artigianelli, Fondamenta delle Zattere ai Gesuiti 919", lat: 45.4295, lng: 12.3262, a: true},
+  {id: "cmr", land: "Kamerun", titel: "NZƎNDA", kuenstler: ["Beya Gille Gacha","Jail Time Records","Sylvie Njobati","Bienvenue Fotso","Zora Snake","Neals Niat"], ort: "Stadt", adresse: "Palazzo Canal, Dorsoduro 3121", lat: 45.4335, lng: 12.3245, a: true},
+  {id: "can", land: "Kanada", titel: "Abbas Akhavan: Entre chien et loup", kuenstler: ["Abbas Akhavan"], ort: "Giardini", adresse: "Giardini"},
+  {id: "cze", land: "Tschechien und Slowakei", titel: "The Silence of the Mole", kuenstler: ["Jakub Jansa","Selmeci Kocka Jusko"], ort: "Giardini", adresse: "Giardini"},
+  {id: "chl", land: "Chile", titel: "Inter-Reality", kuenstler: ["Norton Maza"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "chn", land: "China", titel: "Dream Stream", kuenstler: ["Game Science","Feng Ji","Yang Qi","Liu Chenglong","Xu Jiang","Wang Dongling","Yang Fudong","Zhang Zhoujie"], weitere: 14, ort: "Arsenale", adresse: "Arsenale"},
+  {id: "cod", land: "DR Kongo", titel: "Simba Moto! Seize the fire! Saisis le feu!", kuenstler: ["Sammy Baloji","Arlette Bashizi","Patrick Bongoy","Damso","Gosette Lubondo","Nelson Makengo","Aimé Mpané","Léonard Pongo","Géraldine Tobé"], ort: "Stadt", adresse: "Antico Refettorio, Scuola Grande di San Marco", lat: 45.4395, lng: 12.3415, a: true},
+  {id: "hrv", land: "Kroatien", titel: "Compelled by Fright and Beauty", kuenstler: ["Dubravka Lošić"], ort: "Stadt", adresse: "Palazzo Zorzi, Salizada Zorzi 4930", lat: 45.4355, lng: 12.341, a: true},
+  {id: "cub", land: "Kuba", titel: "Hombres Libres / Free men", kuenstler: ["Juan Roberto Diago Durruthy"], ort: "Stadt", adresse: "Il Giardino Bianco Art Space, Via Giuseppe Garibaldi, Castello 1814", lat: 45.4318, lng: 12.355, a: true},
+  {id: "cyp", land: "Zypern", titel: "It rests to the bones", kuenstler: ["Marina Xenofontos"], ort: "Stadt", adresse: "Associazione Culturale Spiazzi, Castello 3865", lat: 45.4345, lng: 12.346, a: true},
+  {id: "dnk", land: "Dänemark", titel: "Things to Come", kuenstler: ["Maja Malou Lyse"], ort: "Giardini", adresse: "Giardini"},
+  {id: "ecu", land: "Ecuador", titel: "TAWNA & Oscar", kuenstler: ["TAWNA collective","Oscar Santillán"], ort: "Stadt", adresse: "Castello 1636/A", lat: 45.4328, lng: 12.3545, a: true},
+  {id: "slv", land: "El Salvador", titel: "Cartographies of the Displaced", kuenstler: ["José Oscar Molina"], ort: "Stadt", adresse: "Palazzo Mora, Cannaregio 3659", lat: 45.441, lng: 12.333, a: true},
+  {id: "egy", land: "Ägypten", titel: "Silence Pavilion: Between the Tangible and the Intangible", kuenstler: ["Armen Agop"], ort: "Giardini", adresse: "Giardini"},
+  {id: "est", land: "Estland", titel: "The House of Leaking Sky", kuenstler: ["Merike Estna"], ort: "Stadt", adresse: "Calle S. Domenico 1285, Castello", lat: 45.431, lng: 12.3555, a: true},
+  {id: "gnq", land: "Äquatorialguinea", titel: "The Forest – The Undergrowth", kuenstler: ["Fernando Nguema Madja","Modest Gené Roig","Rani Bruchstein","Barbara Cammarata"], weitere: 19, ort: "Stadt", adresse: "Palazzo Donà dalle Rose, Cannaregio 5038/5101", lat: 45.4425, lng: 12.3392, a: true, neu: true},
+  {id: "eth", land: "Äthiopien", titel: "Shapes of Silence", kuenstler: ["Tegene Kunbi"], ort: "Stadt", adresse: "Palazzo Bollani, Castello 3647", lat: 45.4346, lng: 12.345, a: true},
+  {id: "fin", land: "Finnland (Aalto-Pavillon)", titel: "Aeolian Suite", kuenstler: ["Jenna Sutela"], ort: "Giardini", adresse: "Giardini"},
+  {id: "fra", land: "Frankreich", titel: "Comme Saturne", kuenstler: ["Yto Barrada"], ort: "Giardini", adresse: "Giardini"},
+  {id: "geo", land: "Georgien", titel: "Modern Argonauts – Georgian Crossroads", kuenstler: ["Tatia Darchiashvili","Konstantin Mindadze","Guram Nikoladze","Nestan Mikeladze"], weitere: 13, ort: "Stadt", adresse: "Palazzo Querini, Calle Lunga San Barnaba 2691, Dorsoduro", lat: 45.4318, lng: 12.3255, a: true},
+  {id: "deu", land: "Deutschland", titel: "Ruin", kuenstler: ["Henrike Naumann","Sung Tieu"], ort: "Giardini", adresse: "Giardini"},
+  {id: "lux", land: "Luxemburg", titel: "La Merde", kuenstler: ["Aline Bouvy"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "gbr", land: "Großbritannien", titel: "Predicting History: Testing Translation", kuenstler: ["Lubaina Himid"], ort: "Giardini", adresse: "Giardini"},
+  {id: "grc", land: "Griechenland", titel: "ESCAPE ROOM", kuenstler: ["Andreas Angelidakis"], ort: "Giardini", adresse: "Giardini"},
+  {id: "grd", land: "Grenada", titel: "The Poetics of Correspondence", kuenstler: ["Edward Bowen","Arthur Daniel","Josine Dupont","Alexandra Kordas","Lilo Nido and Chris Mast","Jeverson Ramirez","The Holzwege Group","Russell Watson"], ort: "Stadt", adresse: "Spazio Berlendis, Cannaregio 6301/A", lat: 45.4415, lng: 12.3412, a: true},
+  {id: "gtm", land: "Guatemala", titel: "LAS INVISIBLES", kuenstler: ["ARKEO","Luana Bottallo","Jorge Chavarría","Manuel Navichoc","Ana Lorena Núñez","SOY artistic group","Elsie Wunderlich"], ort: "Stadt", adresse: "Spazio Berlendis, Cannaregio 6301", lat: 45.4415, lng: 12.3412, a: true},
+  {id: "gin", land: "Guinea", titel: "Le Son de l’Art: l’Écho de la Matière", kuenstler: ["Bella Bah","Bachir Diallo","King Emmanuel","Sékou Oumar Thiam","Francesco Tullio Altan","Tommaso Cascella"], weitere: 58, ort: "Stadt", adresse: "Isola di San Servolo", lat: 45.422, lng: 12.357, a: true, neu: true},
+  {id: "hti", land: "Haiti", titel: "Yelena’s Garden, 2025-2026", kuenstler: ["Enock Placide"], ort: "Stadt", adresse: "Palazzo Albrizzi-Capello, Cannaregio 4118", lat: 45.4425, lng: 12.336, a: true},
+  {id: "vat", land: "Heiliger Stuhl", titel: "The Ear is the Eye of the Soul", kuenstler: ["Soundwalk Collective"], ort: "Stadt", adresse: "Complesso di Santa Maria Ausiliatrice, Castello 450, und Giardino Mistico dei Carmelitani Scalzi, Cannaregio", lat: 45.4305, lng: 12.357, a: true},
+  {id: "hun", land: "Ungarn", titel: "Pneuma Cosmic", kuenstler: ["Endre Koronczi"], ort: "Giardini", adresse: "Giardini"},
+  {id: "isl", land: "Island", titel: "Pocket Universe", kuenstler: ["Ásta Fanney Sigurðardóttir"], ort: "Stadt", adresse: "Docks Cantieri Cucchini, San Pietro di Castello", lat: 45.4335, lng: 12.3605, a: true},
+  {id: "ind", land: "Indien", titel: "Geographies of Distance: remembering home", kuenstler: ["Alwar Balasubramaniam","Sumakshi Singh","Ranjani Shettar","Asim Waqif","Skarma Sonam Tashi"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "idn", land: "Indonesien", titel: "Printing the Unprinted", kuenstler: ["Agus Suwage","Syahrizal Pahlevi","R. E. Hartanto","Nurdian Ichsan","Theresia Agustina Sitompul","Mariam Sofrina","Rusyan Yasin"], ort: "Stadt", adresse: "Scuola Internazionale di Grafica, Cannaregio 1798", lat: 45.444, lng: 12.327, a: true},
+  {id: "irl", land: "Irland", titel: "Dreamshook", kuenstler: ["Isabel Nolan"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "isr", land: "Israel", titel: "Rose of Nothingness", kuenstler: ["Belu-Simion Fainaru"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "ita", land: "Italien", titel: "With You with Everything", kuenstler: ["Chiara Camoni"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "jpn", land: "Japan", titel: "Grass Babies, Moon Babies", kuenstler: ["Ei Arakawa-Nash"], ort: "Giardini", adresse: "Giardini"},
+  {id: "kaz", land: "Kasachstan", titel: "Qoñyr: The archive of Silence", kuenstler: ["Ardak Mukanova","Assel Kadyrkhanova","ADYR-ASPAN","Anar Aubakir","Smail Bayaliyev","Nurbol Nurakhmet","Mansur Smagambetov","Oralbek Kaboke"], ort: "Stadt", adresse: "Museo Storico Navale, Castello 2148", lat: 45.4327, lng: 12.3505, a: true},
+  {id: "kgz", land: "Kirgisistan", titel: "Belek", kuenstler: ["Alexey Morosov"], ort: "Stadt", adresse: "Ex Chiesa di Santa Caterina, Convitto Foscarini, Cannaregio 4941", lat: 45.4425, lng: 12.3383, a: true},
+  {id: "kor", land: "Südkorea", titel: "Liberation Space: Fortress/Nest", kuenstler: ["Goen Choi","Hyeree Ro"], ort: "Giardini", adresse: "Giardini"},
+  {id: "xkx", land: "Kosovo", titel: "Hard Teeth", kuenstler: ["Brilant Milazimi"], ort: "Stadt", adresse: "Chiesa di Santa Maria del Pianto", lat: 45.4405, lng: 12.344, a: true},
+  {id: "lva", land: "Lettland", titel: "Untamed Assembly: Backstage of Utopia", kuenstler: ["MAREUNROL’S","Bruno Birmanis"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "lbn", land: "Libanon", titel: "Don’t Get Me Wrong", kuenstler: ["Nabil Nahas"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "ltu", land: "Litauen", titel: "animism sings anarchy", kuenstler: ["Eglė Budvytytė"], ort: "Stadt", adresse: "Fucina del Futuro, Castello 5063/B", lat: 45.4375, lng: 12.347, a: true},
+  {id: "mlt", land: "Malta", titel: "No Need To Sparkle; Experiments in Love and Revolution", kuenstler: ["Adrian MM Abela","Charlie Cauchi","Raphael Vella"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "mex", land: "Mexiko", titel: "Actos invisibles para sostener el universo", kuenstler: ["RojoNegro (María Sosa, Noé Martínez)"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "mar", land: "Marokko", titel: "Asǝṭṭa", kuenstler: ["Amina Agueznay"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "mda", land: "Moldau", titel: "On the Thousand and Second Night", kuenstler: ["Pavel Brăila"], ort: "Stadt", adresse: "Spazio Santa Veneranda, Chiesa dei Santi Geremia e Lucia", lat: 45.443, lng: 12.3245, a: true},
+  {id: "mng", land: "Mongolei", titel: "Entanglements: Connectivities Across Borders", kuenstler: ["Nomin Bold","Gerelkhuu Ganbold","Tuguldur Yondonjamts","Dorjderem Davaa"], ort: "Stadt", adresse: "Squero Castello, Salizada Streta 368", lat: 45.4325, lng: 12.3598, a: true},
+  {id: "mne", land: "Montenegro", titel: "OUT OF THE BLUE, I’M SWEPT AWAY", kuenstler: ["Siniša Radulović"], ort: "Stadt", adresse: "Artenova, Castello 5063", lat: 45.4375, lng: 12.347, a: true},
+  {id: "nru", land: "Nauru", titel: "AIM Inundated: Imagining Life After Land", kuenstler: ["Kauw Tsitsi","CPS (Khaled Ramadan, Alfredo Cramerotti)","Patricia Jacomella Bonola","Tedo Rekhviashvili","Sylvia Grace Borda","Ron Laboray","Dorian Batycka","Khaled Hafez","Iv Toshain","Stefano Cagol"], ort: "Stadt", adresse: "Spazio Castello 3683", lat: 45.434, lng: 12.3465, a: true, neu: true},
+  {id: "nzl", land: "Neuseeland", titel: "Taharaki Skyside", kuenstler: ["Fiona Pardington"], ort: "Stadt", adresse: "Istituto Santa Maria della Pietà, Riva degli Schiavoni, Castello 3702", lat: 45.434, lng: 12.343, a: true},
+  {id: "mkd", land: "Nordmazedonien", titel: "Pietà in the Emergency Blankets", kuenstler: ["Velimir Zernovski"], ort: "Stadt", adresse: "Ex Cappella Buon Pastore, Castello 77", lat: 45.433, lng: 12.3612, a: true},
+  {id: "omn", land: "Oman", titel: "Zīnah (Adornment)", kuenstler: ["Haitham Al Busafi"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "nld", land: "Niederlande", titel: "The Fortress", kuenstler: ["Dries Verhoeven"], ort: "Giardini", adresse: "Giardini"},
+  {id: "nor", land: "Nordische Länder (Finnland, Norwegen, Schweden)", titel: "How Many Angels Can Dance on the Head of a Pin?", kuenstler: ["Benjamin Orlow","Klara Kristalova","Tori Wrånes"], ort: "Giardini", adresse: "Giardini"},
+  {id: "pak", land: "Pakistan", titel: "Punj•AB – A Sublime Terrain", kuenstler: ["Faiza Butt"], ort: "Stadt", adresse: "Ex Farmacia Solveni, Dorsoduro 993-994", lat: 45.4305, lng: 12.3285, a: true},
+  {id: "pan", land: "Panama", titel: "Tropical Hyperstition", kuenstler: ["Antonio José Guzmán","Iva Jankovic"], ort: "Arsenale", adresse: "Tesa 42 Arsenale, Fondamenta Case Nuove 2738/c", lat: 45.4372, lng: 12.35, a: true},
+  {id: "per", land: "Peru", titel: "Sara Flores. From Other Worlds", kuenstler: ["Sara Flores"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "phl", land: "Philippinen", titel: "Sea of Love / Dagat ng Pag-ibig", kuenstler: ["Jon Cuyson"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "pol", land: "Polen", titel: "Liquid Tongues", kuenstler: ["Bogna Burska","Daniel Kotowski"], ort: "Giardini", adresse: "Giardini"},
+  {id: "prt", land: "Portugal", titel: "RedSkyFalls", kuenstler: ["Alexandre Estrela"], ort: "Stadt", adresse: "Fondaco Marcello", lat: 45.4425, lng: 12.329, a: true},
+  {id: "qat", land: "Katar", titel: "Untitled (a gathering of remarkable people)", kuenstler: ["Rirkrit Tiravanija","Sophia Al Maria","Tarek Atoui","Alia Farid","Fadi Kattan"], ort: "Giardini", adresse: "Giardini", neu: true},
+  {id: "rou", land: "Rumänien", titel: "Black Seas – Scores for the Sonic Eye", kuenstler: ["Anca Benera","Arnold Estefán"], ort: "Giardini", adresse: "Giardini und New Gallery, Palazzo Correr, Campo Santa Fosca, Cannaregio 2214"},
+  {id: "rus", land: "Russland", titel: "The tree is rooted in the sky", kuenstler: ["Alexey Retinsky","Intrada Ensemble","Toloka Ensemble","Phurpa","Alexey Sysoev","Maria Vinogradova"], ort: "Giardini", adresse: "Giardini"},
+  {id: "smr", land: "San Marino", titel: "Sea of Sound", kuenstler: ["Mark Francis"], ort: "Stadt", adresse: "Tana Art Space, Fondamenta de la Tana 2111", lat: 45.4325, lng: 12.353, a: true},
+  {id: "sau", land: "Saudi-Arabien", titel: "May your tears never dry, you who weep over stones", kuenstler: ["Dana Awartani"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "sen", land: "Senegal", titel: "WURUS – What the Earth provides us with…", kuenstler: ["Caroline Gueye"], ort: "Stadt", adresse: "Palazzo Navagero, Riva degli Schiavoni 4145", lat: 45.4337, lng: 12.342, a: true},
+  {id: "srb", land: "Serbien", titel: "Through Golgotha to Resurrection", kuenstler: ["Predrag Djaković"], ort: "Giardini", adresse: "Giardini"},
+  {id: "sle", land: "Sierra Leone", titel: "Mondi Presenti / Worlds of Today", kuenstler: ["Hawa-Jane Bangura","Ayesha Feisal","Hickmatu Bintu Leigh","Abu Bakarr Mansaray"], weitere: 12, ort: "Stadt", adresse: "Liceo Guggenheim, Dorsoduro 2613", lat: 45.432, lng: 12.324, a: true, neu: true},
+  {id: "sgp", land: "Singapur", titel: "A Pause", kuenstler: ["Amanda Heng Liang Ngim"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "svn", land: "Slowenien", titel: "Soundtrack for an Invisible House", kuenstler: ["Nonument Group (Neja Tomšič, Martin Bricelj Baraga, Nika Grabar, Miloš Kosec)"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "som", land: "Somalia", titel: "Saddexleey", kuenstler: ["Ayan Farah","Asmaa Jama","Warsan Shire"], ort: "Stadt", adresse: "Palazzo Caboto, Via Giuseppe Garibaldi 1645, Castello", lat: 45.432, lng: 12.356, a: true, neu: true},
+  {id: "esp", land: "Spanien", titel: "LOS RESTOS", kuenstler: ["Oriol Vilanova"], ort: "Giardini", adresse: "Giardini"},
+  {id: "che", land: "Schweiz", titel: "The Unfinished Business of Living Together", kuenstler: ["Miriam Laura Leonardi","Lithic Alliance","Yul Tomatala","Nina Wakeford"], ort: "Giardini", adresse: "Giardini"},
+  {id: "syr", land: "Syrien", titel: "The Tower Tomb of Palmira", kuenstler: ["Sara Shamma"], ort: "Stadt", adresse: "Università IUAV, Cotonificio, Dorsoduro 2196", lat: 45.4345, lng: 12.3165, a: true},
+  {id: "tza", land: "Tansania", titel: "Minor Frequencies: The Inner Life Of A Nation", kuenstler: ["Amani Abeid","Valerie Asiimwe Amani","Turakella Editha Gyindo","Lazaro Samuel"], weitere: 31, ort: "Stadt", adresse: "Gervasuti Foundation, Palazzo Canova, Cannaregio 4998-5001/A, und Supernova, Cannaregio 3218/A", lat: 45.442, lng: 12.3378, a: true},
+  {id: "tls", land: "Timor-Leste", titel: "Across Words", kuenstler: ["Veronica Pereira Maia","Etson Caminha","Juventino Madeira"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "tur", land: "Türkei", titel: "A KISS ON THE EYES", kuenstler: ["Nilbar Güreş"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "ukr", land: "Ukraine", titel: "Security Guarantees", kuenstler: ["Zhanna Kadyrova"], ort: "Arsenale", adresse: "Arsenale, Riva Ca’ di Dio"},
+  {id: "uga", land: "Uganda", titel: "KAMPALA", kuenstler: ["Joseph Ntensibe","Lilian Mary Nabulime","Ronex Ahimbisibwe","Lakwena Maciver","Sheila Nakitende","Stacey Gillian Abe","Aloka Trevor"], ort: "Stadt", adresse: "Palazzo Navagero Gallery, Riva degli Schiavoni 4147", lat: 45.4337, lng: 12.342, a: true},
+  {id: "are", land: "Vereinigte Arabische Emirate", titel: "Washwasha", kuenstler: ["Mays Albaik","Jawad Al Malhi","Farah Al Qasimi","Alaa Edris","Lamya Gargash","Taus Makhacheva"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "usa", land: "USA", titel: "Call Me the Breeze", kuenstler: ["Alma Allen"], ort: "Giardini", adresse: "Giardini"},
+  {id: "ury", land: "Uruguay", titel: "ANTIFRAGILE", kuenstler: ["Margaret Whyte"], ort: "Giardini", adresse: "Giardini"},
+  {id: "uzb", land: "Usbekistan", titel: "The Aural Sea", kuenstler: ["Jahongir Bobokulov","Zi Kakhramonova","Aygul Sarsen","Zulfiya Spowart","Xin Liu","A.A.Murakami","Nguyen Phuong Linh"], ort: "Arsenale", adresse: "Arsenale"},
+  {id: "vnm", land: "Vietnam", titel: "Viet Nam: Art in the Global Flow", kuenstler: ["Nguyen Thanh Chuong","Doan Thi Thu Huong","Bui Huu Hung","Le Hoang Nguyen","Trinh Tuan","Cong Kim Hoa","Dinh Van Quan","Dinh Thi Tham Poong","Oanh Phi Phi","Nguyen Truong Linh","Trieu Khac Tien","Le Nguyen Chinh","Le Huu Hieu"], ort: "Stadt", adresse: "Ca’ Faccanon, Calle delle Acque, San Marco 5016", lat: 45.437, lng: 12.3375, a: true, neu: true},
+  {id: "zwe", land: "Simbabwe", titel: "Second Nature | Manyonga", kuenstler: ["Gideon Gomo","Eva Raath","Felix Shumba","Franklyn Dzingai","Pardon Mapondera"], ort: "Stadt", adresse: "Santa Maria della Pietà, Castello 3701", lat: 45.434, lng: 12.343, a: true},
 ];
 
 /* ===================== Zustand ===================== */
@@ -301,7 +355,7 @@ const DEFAULT_NAMES = ["Person 1", "Person 2", "Person 3", "Person 4"];
 const ORTE = ["Alle", "Giardini", "Arsenale", "Stadt"];
 
 PAVILIONS.forEach(p => {
-  p.id = slug(p.land);
+  p.id = p.id || slug(p.land);
   // Eigene Koordinaten bei Giardini/Arsenale = eigener Marker (z. B. Armenien, Tesa 41)
   p.eigen = p.ort !== "Stadt" && p.lat != null;
   if (p.lat == null && p.ort === "Giardini") [p.lat, p.lng] = GIARDINI;
@@ -576,8 +630,9 @@ function renderMarkers() {
       className: "", iconSize: n > 1 ? [34, 34] : [26, 26],
       html: `<div class="mk${done ? " done" : ""}${n > 1 ? "" : " solo"}">${n > 1 ? n : (done ? "✓" : "1")}</div>`
     });
-    const html = `<div class="pop"><h3>${esc(g.name)}</h3><ul>${g.items.map(p =>
-      `<li><span>${state.visited[p.id] ? "<b>✓</b> " : ""}${esc(p.land)}</span><button type="button" data-rate="${p.id}">Bewerten</button></li>`).join("")}</ul></div>`;
+    const mixed = new Set(g.items.map(p => p.adresse)).size > 1;
+    const html = `<div class="pop"><h3>${esc(mixed ? "Mehrere Orte nah beieinander" : g.name)}</h3><ul>${g.items.map(p =>
+      `<li><span>${state.visited[p.id] ? "<b>✓</b> " : ""}${esc(p.land)}${mixed ? `<small>${esc(p.adresse)}</small>` : ""}</span><button type="button" data-rate="${p.id}">Bewerten</button></li>`).join("")}</ul></div>`;
     L.marker([g.lat, g.lng], { icon, title: `${g.name}: ${n} Pavillon${n > 1 ? "s" : ""}` }).bindPopup(html, { maxWidth: 300 }).addTo(markerLayer);
   });
   if (gs.length && !renderMarkers.fitted) {
