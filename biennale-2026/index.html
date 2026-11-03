@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Biennale Arte 2026 „In Minor Keys“: Länderpavillons gemeinsam bewerten, abhaken und auf der Karte finden.">
+<meta name="theme-color" content="#0F5257" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B2F31" media="(prefers-color-scheme: dark)">
+<title>Biennale 2026 · Pavillons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&family=Figtree:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root {
+    --petrol: #0F5257;
+    --petrol-2: #16696F;
+    --gold: #B8901C;
+    --gold-soft: #F3E7C2;
+    --open: #2B6CA3;
+    --bg: #E6EFEC;
+    --surface: #F6FAF8;
+    --text: #17302F;
+    --muted: #55706D;
+    --line: #C6D8D3;
+    --on-petrol: #F6FAF8;
+    --focus: #B8901C;
+    --serif: "Bodoni Moda", "Didot", "Bodoni 72", "Playfair Display", Georgia, serif;
+    --sans: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --petrol: #0B2F31;
+      --petrol-2: #5FB3B3;
+      --gold: #D9B24A;
+      --gold-soft: #3A3218;
+      --open: #6FA8DC;
+      --bg: #0E1A1A;
+      --surface: #142525;
+      --text: #E3EEEB;
+      --muted: #9DB5B1;
+      --line: #284241;
+      --on-petrol: #E3EEEB;
+      --focus: #D9B24A;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.45 var(--sans);
+    padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* Kopf */
+  header {
+    position: sticky; top: 0; z-index: 1000;
+    background: var(--petrol); color: var(--on-petrol);
+    padding: calc(8px + env(safe-area-inset-top)) 16px 8px;
+  }
+  .top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  h1 { font: 600 1.35rem/1.15 var(--serif); margin: 0; letter-spacing: .01em; }
+  h1 small { display: block; font: 400 .8rem/1.3 var(--sans); opacity: .8; margin-top: 2px; }
+  .count { font-size: .85rem; white-space: nowrap; opacity: .9; }
+  .count b { color: var(--gold); font-weight: 600; }
+  @media (prefers-color-scheme: dark) { .count b { color: var(--gold); } }
+
+  .row { display: flex; gap: 6px; align-items: center; margin-top: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px; margin-left: -2px; margin-right: -2px; }
+  .row::-webkit-scrollbar { display: none; }
+  .row .lbl { font-size: .85rem; opacity: .85; white-space: nowrap; margin-right: 2px; }
+
+  .chip {
+    min-height: 38px; padding: 0 12px; border-radius: 19px; white-space: nowrap;
+    border: 1px solid rgba(255,255,255,.35); background: transparent; color: var(--on-petrol);
+    display: inline-flex; align-items: center; gap: 6px; flex: none;
+  }
+  .chip .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
+  .chip[aria-pressed="true"] { background: var(--on-petrol); color: #0F5257; border-color: var(--on-petrol); font-weight: 600; }
+  @media (prefers-color-scheme: dark) { .chip[aria-pressed="true"] { color: #0B2F31; } }
+  .chip.icon { padding: 0 10px; }
+
+  .search {
+    width: 100%; min-height: 40px; border-radius: 20px; border: 0; padding: 0 14px;
+    background: rgba(255,255,255,.14); color: var(--on-petrol);
+  }
+  .search::placeholder { color: rgba(246,250,248,.7); }
+
+  .seg { display: inline-flex; border: 1px solid rgba(255,255,255,.35); border-radius: 19px; overflow: hidden; flex: none; }
+  .seg button { min-height: 38px; padding: 0 11px; border: 0; background: transparent; color: var(--on-petrol); white-space: nowrap; }
+  .seg button + button { border-left: 1px solid rgba(255,255,255,.25); }
+  .seg button[aria-pressed="true"] { background: var(--on-petrol); color: #0F5257; font-weight: 600; }
+  @media (prefers-color-scheme: dark) { .seg button[aria-pressed="true"] { color: #0B2F31; } }
+
+  main { padding: 0 0 calc(24px + env(safe-area-inset-bottom)); max-width: 760px; margin: 0 auto; }
+  .notice { margin: 12px 16px 0; padding: 10px 12px; border-left: 3px solid var(--gold); background: var(--surface); font-size: .9rem; }
+
+  /* Liste */
+  ul.list { list-style: none; margin: 0; padding: 0; }
+  li.p { border-bottom: 1px solid var(--line); }
+  .head {
+    width: 100%; display: flex; align-items: center; gap: 12px; text-align: left;
+    padding: 12px 16px; min-height: 64px; background: transparent; border: 0;
+  }
+  .head .main { flex: 1; min-width: 0; }
+  .land { font: 600 1.12rem/1.2 var(--serif); display: flex; align-items: center; gap: 6px; }
+  .check { color: var(--gold); font-family: var(--sans); font-weight: 700; }
+  .title { font-size: .92rem; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .meta { font-size: .8rem; color: var(--muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .side { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex: none; }
+  .avg { font: 600 1.05rem/1 var(--sans); color: var(--gold); min-width: 2.2em; text-align: right; }
+  .avg.none { color: var(--muted); font-weight: 400; }
+  .dots { display: flex; gap: 3px; min-height: 8px; }
+  .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+  li.p.open { background: var(--surface); }
+  li.p.open .title, li.p.open .meta { white-space: normal; }
+
+  .body { padding: 0 16px 16px; }
+  .facts { font-size: .9rem; margin: 0 0 12px; }
+  .facts div { margin-top: 3px; }
+  .facts span { color: var(--muted); }
+  .rate { margin: 10px 0; }
+  .rate .rl { font-size: .9rem; margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .rate .rl em { font-style: normal; color: var(--muted); font-size: .8rem; }
+  .scale { display: flex; gap: 6px; }
+  .scale button {
+    width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--line);
+    background: var(--bg); font-weight: 600;
+  }
+  .scale button.on { background: var(--gold); border-color: var(--gold); color: #fff; }
+  @media (prefers-color-scheme: dark) { .scale button.on { color: #1A1505; } }
+  textarea {
+    width: 100%; min-height: 72px; border-radius: 10px; border: 1.5px solid var(--line);
+    background: var(--bg); padding: 8px 10px; resize: vertical; margin-top: 4px;
+  }
+  .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .btn {
+    min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1.5px solid var(--petrol-2);
+    background: transparent; color: var(--petrol-2); font-weight: 600;
+  }
+  .btn.gold { border-color: var(--gold); color: var(--gold); }
+  .btn.gold[aria-pressed="true"] { background: var(--gold); color: #fff; }
+  @media (prefers-color-scheme: dark) { .btn.gold[aria-pressed="true"] { color: #1A1505; } }
+  .others { margin-top: 14px; font-size: .9rem; }
+  .others h3 { font: 600 .95rem var(--serif); margin: 0 0 4px; }
+  .others div { padding: 4px 0; border-top: 1px solid var(--line); }
+  .others .who { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+  .others .who i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+  .others p { margin: 2px 0 0; color: var(--muted); white-space: pre-wrap; }
+  .empty { padding: 32px 16px; color: var(--muted); text-align: center; }
+
+  /* Karte */
+  #map { height: calc(100dvh - var(--hh, 220px)); min-height: 320px; }
+  .mk {
+    width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--open); color: #fff; font: 600 14px var(--sans);
+    border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.35);
+  }
+  .mk.done { background: #B8901C; }
+  .mk.solo { width: 26px; height: 26px; font-size: 12px; }
+  .me { width: 16px; height: 16px; border-radius: 50%; background: #2B6CA3; border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(43,108,163,.25); }
+  .leaflet-popup-content { margin: 10px 12px; font: 14px/1.35 var(--sans); min-width: 200px; }
+  .pop h3 { font: 600 1rem var(--serif); margin: 0 0 6px; }
+  .pop ul { list-style: none; margin: 0; padding: 0; max-height: 46vh; overflow: auto; }
+  .pop li { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-top: 1px solid #dde7e4; }
+  .pop li span { flex: 1; }
+  .pop li b { color: #B8901C; }
+  .pop button { min-height: 38px; padding: 0 10px; border-radius: 19px; border: 1.5px solid #0F5257; background: #fff; color: #0F5257; font-weight: 600; }
+  .locate { position: absolute; z-index: 500; right: 12px; bottom: calc(24px + env(safe-area-inset-bottom)); }
+  .locate button { min-height: 44px; padding: 0 14px; border-radius: 22px; border: 0; background: var(--petrol); color: var(--on-petrol); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  .mapwrap { position: relative; }
+
+  footer { padding: 16px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  footer p { width: 100%; text-align: center; font-size: .8rem; color: var(--muted); margin: 8px 0 0; }
+
+  dialog { border: 0; border-radius: 14px; padding: 18px; width: min(92vw, 380px); background: var(--surface); color: var(--text); }
+  dialog::backdrop { background: rgba(0,0,0,.45); }
+  dialog h2 { font: 600 1.2rem var(--serif); margin: 0 0 4px; }
+  dialog p { font-size: .85rem; color: var(--muted); margin: 0 0 12px; }
+  dialog label { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+  dialog label i { width: 14px; height: 14px; border-radius: 50%; background: var(--c); flex: none; }
+  dialog input { flex: 1; min-height: 42px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); padding: 0 10px; }
+  dialog .actions { justify-content: flex-end; }
+  .toast { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); max-width: 90vw; text-align: center; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 20px; font-size: .9rem; z-index: 2000; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+</style>
+</head>
+<body>
+<header id="hdr">
+  <div class="top">
+    <h1>Biennale Arte 2026<small>In Minor Keys · 9. Mai – 22. Nov.</small></h1>
+    <div class="count" id="count" aria-live="polite"></div>
+  </div>
+  <div class="row" id="people" role="group" aria-label="Es bewertet"></div>
+  <div class="row"><label class="sr" for="q">Suche</label><input id="q" class="search" type="search" placeholder="Land, Titel oder Künstler:in suchen" autocomplete="off"></div>
+  <div class="row">
+    <div class="seg" id="f-ort" role="group" aria-label="Ort"></div>
+    <div class="seg" id="f-status" role="group" aria-label="Besucht"></div>
+  </div>
+  <div class="row">
+    <div class="seg" id="f-sort" role="group" aria-label="Sortierung"></div>
+    <div class="seg" id="f-view" role="group" aria-label="Ansicht"></div>
+  </div>
+</header>
+
+<main>
+  <div id="notice"></div>
+  <section id="listView"><ul class="list" id="list"></ul></section>
+  <section id="mapView" class="mapwrap" hidden>
+    <div id="map" role="region" aria-label="Karte der Pavillons"></div>
+    <div class="locate"><button type="button" id="locate">Mein Standort</button></div>
+  </section>
+  <footer id="foot">
+    <button class="btn" type="button" id="export">Exportieren</button>
+    <button class="btn" type="button" id="import">Importieren</button>
+    <input type="file" id="file" accept="application/json,.json" hidden>
+    <p>Bewertungen bleiben nur auf diesem Gerät gespeichert. Mit Export und Import übertragt ihr sie auf ein anderes Handy.</p>
+  </footer>
+</main>
+
+<dialog id="names" aria-labelledby="names-h">
+  <form method="dialog" id="names-form">
+    <h2 id="names-h">Wer bewertet?</h2>
+    <p>Bis zu vier Personen. Leeres Feld = Person ausblenden.</p>
+    <div id="names-fields"></div>
+    <div class="actions">
+      <button class="btn" value="cancel" type="submit">Abbrechen</button>
+      <button class="btn gold" value="ok" type="submit" aria-pressed="true">Speichern</button>
+    </div>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ===================== Daten =====================
+ * Länderpavillons (National Participations) der 61. Biennale Arte 2026.
+ * Quelle: biennialfoundation.org – National Pavilions and Collateral Events at the Venice Biennale 2026.
+ * ort: "Giardini" | "Arsenale" | "Stadt"; lat/lng: Standort des Eingangs.
+ */
+const DATA_COMPLETE = false;
+const GIARDINI = [45.42870, 12.35780];
+const ARSENALE = [45.43380, 12.35130];
+const PAVILIONS = [
+  { land: "Albanien", titel: "A Place in the Sun", kuenstler: ["Genti Korini"], ort: "Arsenale", adresse: "Arsenale, Castello" },
+  { land: "Brasilien", titel: "Comigo ninguém pode", kuenstler: ["Adriana Varejão", "Rosana Paulino"], ort: "Giardini", adresse: "Giardini della Biennale" },
+  { land: "Japan", titel: "", kuenstler: ["Ei Arakawa-Nash"], ort: "Giardini", adresse: "Giardini della Biennale" },
+  { land: "Kanada", titel: "", kuenstler: ["Abbas Akhavan"], ort: "Giardini", adresse: "Giardini della Biennale" },
+  { land: "Korea", titel: "Liberation Space: Fortress/Nest", kuenstler: ["Goen Choi", "Hyeree Ro"], ort: "Giardini", adresse: "Giardini della Biennale" },
+  { land: "Philippinen", titel: "Sea of Love", kuenstler: ["Jon Cuyson"], ort: "Arsenale", adresse: "Arsenale, Castello" },
+  { land: "Syrien", titel: "The Tower Tomb of Palmyra", kuenstler: [], ort: "Stadt", adresse: "Università Iuav, Cotonificio Veneziano, Dorsoduro 2196", lat: 45.43405, lng: 12.31890 },
+];
+
+/* ===================== Zustand ===================== */
+const KEY = "biennale2026:v1";
+const COLORS = ["#C0563B", "#2B6CA3", "#5E8C31", "#8A4F7D"];
+const DEFAULT_NAMES = ["Person 1", "Person 2", "Person 3", "Person 4"];
+const ORTE = ["Alle", "Giardini", "Arsenale", "Stadt"];
+
+PAVILIONS.forEach(p => {
+  p.id = slug(p.land);
+  if (p.ort === "Giardini") [p.lat, p.lng] = GIARDINI;
+  if (p.ort === "Arsenale") [p.lat, p.lng] = ARSENALE;
+  p.weitere = p.weitere || 0;
+  p.hay = norm([p.land, p.titel, p.kuenstler.join(" ")].join(" "));
+});
+
+function slug(s) { return norm(s).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+function norm(s) { return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+function freshState() {
+  return { names: DEFAULT_NAMES.slice(), active: 0, ratings: {}, visited: {}, ort: "Alle", status: "Alle", sort: "az", view: "list" };
+}
+function load() {
+  const s = freshState();
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return s;
+    const d = JSON.parse(raw);
+    if (Array.isArray(d.names) && d.names.length === 4) s.names = d.names.map(n => String(n ?? ""));
+    if (d.ratings && typeof d.ratings === "object") s.ratings = d.ratings;
+    if (d.visited && typeof d.visited === "object") s.visited = d.visited;
+    if (Number.isInteger(d.active)) s.active = d.active;
+    if (ORTE.includes(d.ort)) s.ort = d.ort;
+    if (["Alle", "Offen", "Besucht"].includes(d.status)) s.status = d.status;
+    if (["az", "best"].includes(d.sort)) s.sort = d.sort;
+    if (["list", "map"].includes(d.view)) s.view = d.view;
+  } catch (e) { /* leerer Zustand */ }
+  return s;
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* privat-Modus o. Ä. */ }
+}
+
+let state = load();
+let openId = null;
+let query = "";
+fixActive();
+
+function visiblePeople() { return state.names.map((n, i) => ({ i, name: n.trim(), color: COLORS[i] })).filter(p => p.name); }
+function fixActive() {
+  const v = visiblePeople();
+  if (v.length && !v.some(p => p.i === state.active)) state.active = v[0].i;
+}
+function rating(pid, i) { return (state.ratings[pid] || {})[i] || null; }
+function hasRating(r) { return r && (r.k || r.g || (r.n && r.n.trim())); }
+function setRating(pid, i, patch) {
+  const all = state.ratings[pid] = state.ratings[pid] || {};
+  const r = Object.assign({ k: 0, g: 0, n: "" }, all[i], patch);
+  if (!hasRating(r)) delete all[i]; else all[i] = r;
+  if (!Object.keys(all).length) delete state.ratings[pid];
+  save();
+}
+function average(pid) {
+  const vals = [];
+  visiblePeople().forEach(p => { const r = rating(pid, p.i); if (r) { if (r.k) vals.push(r.k); if (r.g) vals.push(r.g); } });
+  return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+}
+function fmt(n) { return n.toFixed(1).replace(".", ","); }
+
+function filtered() {
+  const q = norm(query.trim());
+  let list = PAVILIONS.filter(p =>
+    (state.ort === "Alle" || p.ort === state.ort) &&
+    (state.status === "Alle" || (state.status === "Besucht") === !!state.visited[p.id]) &&
+    (!q || p.hay.includes(q)));
+  list.sort((a, b) => a.land.localeCompare(b.land, "de"));
+  if (state.sort === "best") {
+    list.sort((a, b) => {
+      const x = average(a.id), y = average(b.id);
+      if (x === null && y === null) return 0;
+      if (x === null) return 1;
+      if (y === null) return -1;
+      return y - x;
+    });
+  }
+  return list;
+}
+
+/* ===================== Kopf ===================== */
+const $ = id => document.getElementById(id);
+
+function segment(el, options, current, onPick) {
+  el.innerHTML = options.map(([v, l]) => `<button type="button" data-v="${esc(v)}" aria-pressed="${v === current}">${esc(l)}</button>`).join("");
+  el.onclick = e => { const b = e.target.closest("button"); if (b) onPick(b.dataset.v); };
+}
+
+function renderHeader() {
+  const v = visiblePeople();
+  $("people").innerHTML = `<span class="lbl">Es bewertet:</span>` +
+    v.map(p => `<button type="button" class="chip" style="--c:${p.color}" data-i="${p.i}" aria-pressed="${p.i === state.active}"><span class="dot"></span>${esc(p.name)}</button>`).join("") +
+    `<button type="button" class="chip icon" id="edit-names" aria-label="Namen ändern">✎ Namen</button>`;
+  segment($("f-ort"), ORTE.map(o => [o, o]), state.ort, v => { state.ort = v; update(); });
+  segment($("f-status"), [["Alle", "Alle"], ["Offen", "Offen"], ["Besucht", "Besucht"]], state.status, v => { state.status = v; update(); });
+  segment($("f-sort"), [["az", "A–Z"], ["best", "Bestbewertet"]], state.sort, v => { state.sort = v; update(); });
+  segment($("f-view"), [["list", "Liste"], ["map", "Karte"]], state.view, v => { state.view = v; update(); });
+  const done = PAVILIONS.filter(p => state.visited[p.id]).length;
+  $("count").innerHTML = `<b>${done}</b> von ${PAVILIONS.length} besucht`;
+}
+$("people").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.id === "edit-names") return openNames();
+  state.active = +b.dataset.i; save(); renderHeader(); renderList();
+});
+
+/* ===================== Liste ===================== */
+function artistsShort(p) {
+  const k = p.kuenstler;
+  if (!k.length) return "";
+  const extra = p.weitere + Math.max(0, k.length - 4);
+  return k.slice(0, 4).join(", ") + (extra ? ` und ${extra} weitere` : "");
+}
+function scaleHtml(kind, val) {
+  let h = "";
+  for (let n = 1; n <= 5; n++) h += `<button type="button" data-k="${kind}" data-n="${n}" class="${val === n ? "on" : ""}" aria-pressed="${val === n}" aria-label="${n} von 5">${n}</button>`;
+  return h;
+}
+function itemHtml(p) {
+  const avg = average(p.id);
+  const dots = visiblePeople().filter(x => hasRating(rating(p.id, x.i))).map(x => `<i style="--c:${x.color}" title="${esc(x.name)}"></i>`).join("");
+  const open = p.id === openId;
+  const vis = !!state.visited[p.id];
+  let html = `<li class="p${open ? " open" : ""}" id="p-${p.id}" data-id="${p.id}">
+    <button type="button" class="head" aria-expanded="${open}" aria-controls="b-${p.id}">
+      <div class="main">
+        <div class="land">${esc(p.land)}${vis ? `<span class="check" aria-label="besucht">✓</span>` : ""}</div>
+        ${p.titel ? `<div class="title">${esc(p.titel)}</div>` : ""}
+        <div class="meta">${esc(artistsShort(p) || "–")} · ${esc(p.ort)}</div>
+      </div>
+      <div class="side">
+        <span class="avg${avg === null ? " none" : ""}" aria-label="${avg === null ? "noch keine Bewertung" : "Durchschnitt " + fmt(avg)}">${avg === null ? "–" : fmt(avg)}</span>
+        <span class="dots">${dots}</span>
+      </div>
+    </button>`;
+  if (open) {
+    const me = visiblePeople().find(x => x.i === state.active);
+    const r = (me && rating(p.id, me.i)) || { k: 0, g: 0, n: "" };
+    const others = visiblePeople().filter(x => x.i !== state.active && hasRating(rating(p.id, x.i)));
+    html += `<div class="body" id="b-${p.id}">
+      <div class="facts">
+        ${p.kuenstler.length ? `<div><span>Künstler:innen:</span> ${esc(artistsShort(p))}</div>` : ""}
+        <div><span>Ort:</span> ${esc(p.ort)} · ${esc(p.adresse)}</div>
+      </div>
+      ${me ? `
+      <div class="rate"><div class="rl">Kreativität <em>${esc(me.name)} · nochmal tippen = zurücksetzen</em></div><div class="scale">${scaleHtml("k", r.k)}</div></div>
+      <div class="rate"><div class="rl">Gefallen</div><div class="scale">${scaleHtml("g", r.g)}</div></div>
+      <label class="rl" for="n-${p.id}" style="font-size:.9rem">Notiz</label>
+      <textarea id="n-${p.id}" data-note placeholder="Was ist euch aufgefallen?">${esc(r.n)}</textarea>` : `<p>Bitte zuerst unter „Namen“ eine Person eintragen.</p>`}
+      <div class="actions">
+        <button type="button" class="btn gold" data-visit aria-pressed="${vis}">${vis ? "✓ Besucht" : "Als besucht markieren"}</button>
+      </div>
+      ${others.length ? `<div class="others"><h3>Die anderen</h3>${others.map(o => {
+        const x = rating(p.id, o.i);
+        return `<div><span class="who" style="--c:${o.color}"><i></i>${esc(o.name)}</span> · Kreativität ${x.k || "–"} · Gefallen ${x.g || "–"}${x.n && x.n.trim() ? `<p>${esc(x.n)}</p>` : ""}</div>`;
+      }).join("")}</div>` : ""}
+    </div>`;
+  }
+  return html + "</li>";
+}
+function renderList() {
+  const list = filtered();
+  $("list").innerHTML = list.length ? list.map(itemHtml).join("") : `<li class="empty">Kein Pavillon passt zu Suche und Filtern.</li>`;
+}
+function renderItem(id) {
+  const li = document.getElementById("p-" + id);
+  const p = PAVILIONS.find(x => x.id === id);
+  if (!li || !p) return renderList();
+  const focusSel = document.activeElement && document.activeElement.closest("li") === li ? focusKey(document.activeElement) : null;
+  li.outerHTML = itemHtml(p);
+  if (focusSel) { const el = document.getElementById("p-" + id).querySelector(focusSel); if (el) el.focus(); }
+}
+function focusKey(el) {
+  if (el.matches(".head")) return ".head";
+  if (el.dataset.k) return `[data-k="${el.dataset.k}"][data-n="${el.dataset.n}"]`;
+  if (el.hasAttribute("data-visit")) return "[data-visit]";
+  return null;
+}
+$("list").addEventListener("click", e => {
+  const li = e.target.closest("li.p"); if (!li) return;
+  const id = li.dataset.id;
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.classList.contains("head")) {
+    const prev = openId;
+    openId = openId === id ? null : id;
+    if (prev && prev !== id) renderItem(prev);
+    renderItem(id);
+    return;
+  }
+  if (b.dataset.k) {
+    const cur = rating(id, state.active) || {};
+    const n = +b.dataset.n;
+    setRating(id, state.active, { [b.dataset.k]: cur[b.dataset.k] === n ? 0 : n });
+    if (state.sort === "best") { renderList(); } else renderItem(id);
+    return;
+  }
+  if (b.hasAttribute("data-visit")) {
+    toggleVisited(id);
+  }
+});
+$("list").addEventListener("input", e => {
+  if (!e.target.matches("[data-note]")) return;
+  const id = e.target.closest("li.p").dataset.id;
+  setRating(id, state.active, { n: e.target.value });
+  // nur Kopfzeile auffrischen, damit das Textfeld den Fokus behält
+  const li = document.getElementById("p-" + id);
+  const tmp = document.createElement("ul"); tmp.innerHTML = itemHtml(PAVILIONS.find(x => x.id === id));
+  li.querySelector(".side").replaceWith(tmp.querySelector(".side"));
+});
+function toggleVisited(id) {
+  if (state.visited[id]) delete state.visited[id]; else state.visited[id] = true;
+  save();
+  renderHeader();
+  if (state.status !== "Alle") renderList(); else renderItem(id);
+  if (map) renderMarkers();
+}
+
+/* ===================== Namen ===================== */
+function openNames() {
+  $("names-fields").innerHTML = state.names.map((n, i) =>
+    `<label style="--c:${COLORS[i]}"><i></i><span class="sr">Person ${i + 1}</span><input name="n${i}" value="${esc(n)}" maxlength="20" placeholder="(ausgeblendet)" autocomplete="off"></label>`).join("");
+  const d = $("names");
+  if (typeof d.showModal === "function") d.showModal();
+  else { // sehr alte Browser
+    const res = state.names.map((n, i) => prompt(`Name Person ${i + 1} (leer = ausblenden)`, n));
+    if (res.every(x => x !== null)) { state.names = res.map(x => x.trim()); afterNames(); }
+  }
+}
+$("names").addEventListener("close", () => {
+  if ($("names").returnValue !== "ok") return;
+  const f = $("names-form");
+  state.names = [0, 1, 2, 3].map(i => f.elements["n" + i].value.trim().slice(0, 20));
+  afterNames();
+});
+function afterNames() { fixActive(); save(); update(); }
+
+/* ===================== Karte ===================== */
+let map = null, markerLayer = null, meMarker = null;
+function groups() {
+  const g = new Map();
+  filtered().forEach(p => {
+    if (p.lat == null) return;
+    const key = p.ort === "Stadt" ? `${p.lat.toFixed(5)},${p.lng.toFixed(5)}` : p.ort;
+    if (!g.has(key)) g.set(key, { name: p.ort === "Stadt" ? p.adresse : p.ort, lat: p.lat, lng: p.lng, items: [] });
+    g.get(key).items.push(p);
+  });
+  return [...g.values()];
+}
+function initMap() {
+  if (map || typeof L === "undefined") return;
+  map = L.map("map", { zoomControl: true }).setView([45.4370, 12.3360], 14);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(map);
+  markerLayer = L.layerGroup().addTo(map);
+  map.on("popupopen", e => {
+    e.popup.getElement().addEventListener("click", ev => {
+      const b = ev.target.closest("button[data-rate]");
+      if (b) { map.closePopup(); jumpTo(b.dataset.rate); }
+    });
+  });
+}
+function renderMarkers() {
+  if (!map) return;
+  markerLayer.clearLayers();
+  const gs = groups();
+  gs.forEach(g => {
+    const done = g.items.every(p => state.visited[p.id]);
+    const n = g.items.length;
+    const icon = L.divIcon({
+      className: "", iconSize: n > 1 ? [34, 34] : [26, 26],
+      html: `<div class="mk${done ? " done" : ""}${n > 1 ? "" : " solo"}">${n > 1 ? n : (done ? "✓" : "1")}</div>`
+    });
+    const html = `<div class="pop"><h3>${esc(g.name)}</h3><ul>${g.items.map(p =>
+      `<li><span>${state.visited[p.id] ? "<b>✓</b> " : ""}${esc(p.land)}</span><button type="button" data-rate="${p.id}">Bewerten</button></li>`).join("")}</ul></div>`;
+    L.marker([g.lat, g.lng], { icon, title: `${g.name}: ${n} Pavillon${n > 1 ? "s" : ""}` }).bindPopup(html, { maxWidth: 300 }).addTo(markerLayer);
+  });
+  if (gs.length && !renderMarkers.fitted) {
+    renderMarkers.fitted = true;
+    map.fitBounds(L.latLngBounds(gs.map(g => [g.lat, g.lng])).pad(0.15), { maxZoom: 15 });
+  }
+}
+function jumpTo(id) {
+  state.view = "list"; openId = id; update();
+  const li = document.getElementById("p-" + id);
+  if (li) {
+    const top = li.getBoundingClientRect().top + scrollY - $("hdr").offsetHeight - 4;
+    scrollTo({ top, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    li.querySelector(".head").focus({ preventScroll: true });
+  }
+}
+$("locate").addEventListener("click", () => {
+  if (!navigator.geolocation) return toast("Standort wird nicht unterstützt");
+  toast("Standort wird gesucht …");
+  navigator.geolocation.getCurrentPosition(pos => {
+    const ll = [pos.coords.latitude, pos.coords.longitude];
+    if (meMarker) meMarker.setLatLng(ll);
+    else meMarker = L.marker(ll, { icon: L.divIcon({ className: "", iconSize: [16, 16], html: '<div class="me"></div>' }), title: "Mein Standort", keyboard: false }).addTo(map);
+    map.setView(ll, Math.max(map.getZoom(), 16));
+  }, () => toast("Standort nicht verfügbar"), { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 });
+});
+
+/* ===================== Export / Import ===================== */
+$("export").addEventListener("click", () => {
+  const data = { app: "biennale-2026", version: 1, exportiert: new Date().toISOString(), names: state.names, ratings: state.ratings, visited: state.visited };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `biennale-2026-bewertungen-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+$("import").addEventListener("click", () => $("file").click());
+$("file").addEventListener("change", async e => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  try {
+    const d = JSON.parse(await f.text());
+    if (d.app !== "biennale-2026" || typeof d.ratings !== "object") throw new Error("format");
+    if (!confirm("Bewertungen zusammenführen? Bei gleicher Person und gleichem Pavillon gewinnt die importierte Datei.")) return;
+    let n = 0;
+    for (const [pid, per] of Object.entries(d.ratings || {})) {
+      if (!PAVILIONS.some(p => p.id === pid) || !per || typeof per !== "object") continue;
+      for (const [i, r] of Object.entries(per)) {
+        if (!/^[0-3]$/.test(i) || !r) continue;
+        const clean = { k: clamp(r.k), g: clamp(r.g), n: String(r.n || "").slice(0, 2000) };
+        if (hasRating(clean)) { (state.ratings[pid] = state.ratings[pid] || {})[i] = clean; n++; }
+      }
+    }
+    for (const [pid, v] of Object.entries(d.visited || {})) if (v && PAVILIONS.some(p => p.id === pid)) state.visited[pid] = true;
+    if (Array.isArray(d.names) && d.names.length === 4) state.names = state.names.map((own, i) => own.trim() || String(d.names[i] || "").slice(0, 20));
+    fixActive(); save(); update();
+    toast(`${n} Bewertungen importiert`);
+  } catch (err) { toast("Diese Datei konnte nicht gelesen werden"); }
+});
+function clamp(v) { v = Math.round(+v); return v >= 1 && v <= 5 ? v : 0; }
+
+/* ===================== Allgemein ===================== */
+let toastT;
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2200); }
+
+$("q").addEventListener("input", e => { query = e.target.value; renderList(); if (map) renderMarkers(); });
+
+function setHeaderHeight() { document.documentElement.style.setProperty("--hh", $("hdr").offsetHeight + "px"); }
+
+function update() {
+  save();
+  renderHeader();
+  const isMap = state.view === "map";
+  $("listView").hidden = isMap;
+  $("mapView").hidden = !isMap;
+  $("foot").hidden = isMap;
+  $("notice").hidden = isMap;
+  if (isMap) {
+    setHeaderHeight();
+    if (typeof L === "undefined") { $("map").innerHTML = '<p class="empty">Die Karte konnte nicht geladen werden (keine Verbindung?).</p>'; return; }
+    initMap(); map.invalidateSize(); renderMarkers();
+  } else renderList();
+}
+
+if (!DATA_COMPLETE) $("notice").innerHTML = `<div class="notice">Vorschau: Die Pavillon-Liste ist noch unvollständig.</div>`;
+addEventListener("resize", () => { if (state.view === "map") { setHeaderHeight(); if (map) map.invalidateSize(); } });
+update();
+</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer onload="if(state.view==='map')update()"></script>
+</body>
+</html>
