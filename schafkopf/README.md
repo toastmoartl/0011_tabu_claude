@@ -108,6 +108,7 @@ npm run test:e2e                     # nur Browser-Tests
 
 - **Unit-Tests** (`tests/unit`, `node:test`): Spiellogik und Kartendateien (vollständig, wohlgeformt, richtige Karte hinter dem Dateinamen, keine Skripte oder externen Verweise). Der Lauf
   schlägt fehl, wenn die Abdeckung unter 95 % Zeilen / 90 % Zweige / 95 % Funktionen fällt.
+- **Workflow-Test** (`tests/unit/workflows.test.js`): genau ein Pages-Deploy, nur `_site`, Deploy wartet auf die Tests; erkennt die GitHub-Vorlage `static.yml` und andere Schreibweisen für „ganzes Repo“.
 - **Stich-Tests** (`tests/unit/tricks.test.js`): Trumpf-Reihenfolge Paar für Paar, Bedienzwang, Stichgewinner, 1000 komplette Spiele auf Regelverstöße und die Häufigkeiten der Stich-Arten.
 - **Netz-Test** (`tests/e2e/slow-network.e2e.test.js`): ein kleiner Test-Server simuliert langsame, ausgefallene und kurz unterbrochene Kartenbilder.
 - **Layout-Test** (`tests/e2e/responsive.e2e.test.js`): 11 Bildschirmgrößen (S23 in zwei Höhen, iPhone, Tablet, Querformat, Laptop, Full HD) × 9 Ansichten – kein Scrollen, nichts über dem Rand, kein abgeschnittener Text, Bedienelemente groß genug, Karten gleich groß und ohne Überlappung.
@@ -130,6 +131,12 @@ Einmalig nötig: **Settings → Pages → Source: „GitHub Actions“**.
 Die Seite liegt danach unter `https://<benutzer>.github.io/<repo>/`.
 
 Lokal ausprobieren: `node scripts/build-site.js _site` baut dieselbe Mappe.
+
+**Wichtig: nur ein Pages-Workflow.** Richtet man Pages über die GitHub-Oberfläche ein, bietet GitHub die Vorlage
+„Static HTML“ (`static.yml`) an. Sie lädt das **ganze Repo** hoch (`path: '.'`) – Tests, Konfiguration und nicht
+veröffentlichte Spiele. Läuft sie neben `pages.yml`, ist bei jedem Merge für einige Minuten alles öffentlich, bis
+`pages.yml` (nur `_site`) fertig ist. Darum gibt es `static.yml` nicht mehr, und `scripts/check-workflows.js`
+(auch Teil der Tests) schlägt fehl, wenn ein zweiter Pages-Deploy oder ein Upload des ganzen Repos auftaucht.
 
 ## Datenschutz & Schriften
 

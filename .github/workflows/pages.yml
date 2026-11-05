@@ -3,6 +3,9 @@ name: GitHub Pages
 # Veröffentlicht die Spiele auf GitHub Pages, sobald etwas auf main landet
 # (oder von Hand über "Run workflow"). Einmalig nötig:
 # Repository → Settings → Pages → Source: "GitHub Actions".
+#
+# Das ist der EINZIGE Workflow, der nach Pages deployt. Die GitHub-Vorlage „static.yml“ lädt das ganze Repo
+# (path: '.') hoch und darf nicht zusätzlich laufen – scripts/check-workflows.js prüft das in den Tests.
 on:
   push:
     branches: [main]
