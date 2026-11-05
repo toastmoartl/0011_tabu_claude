@@ -35,6 +35,32 @@ abgelaufen) = ein deutlich längerer Brummer (300 ms) und rotes Aufblitzen – s
 Hinsehen unterscheiden. Die Werte stehen als `VIBRATION` in `js/logic.js`; Vibration lässt sich in den
 Einstellungen ausschalten.
 
+## Realistische Stiche
+
+Ein echter Stich besteht nicht aus vier zufälligen Karten: Es gilt **Bedienzwang**, und die **Trümpfe** gehören zusammen.
+Darum wird die Auswahl (Einstellung „Realistische Stiche“, Standard: an) so gebildet, dass ein ganzes Spiel gespielt wird:
+
+- 24 Karten werden an 4 Spieler zu je 6 verteilt, dann werden Stiche mit **regelgerechten, zufälligen Zügen** gespielt:
+  Wer die ausgespielte Farbe (oder Trumpf) hat, muss sie zugeben, sonst darf er alles legen; der Stichgewinner spielt aus.
+- Trumpf ist wie im **Sauspiel**: alle 4 Ober, alle 4 Unter und die Herz-Karten (im kurzen Blatt 12 von 24).
+  Stärke: Eichel-, Gras-, Herz-, Schellen-Ober, dann ebenso die Unter, dann Herz Sau, 10, König, 9. Ein Ober gehört *nicht* zur Farbe seines Bildes.
+- Aus den Stichen des Spiels (1. bis 6.) wird ein zufälliger gewählt. Mit „Schwachstellen öfter üben“ werden mehrere
+  realistische Stiche gebildet und einer davon nach Gewicht gewählt – die Stiche bleiben also regelgerecht.
+
+Gemessen an 200 000 Stichen (Zufall: vier Karten aus 24 gezogen):
+
+| Art des Stichs | reiner Zufall | realistisch |
+|---|---:|---:|
+| 4 Trümpfe | 4,7 % | 26 % |
+| 3 Trümpfe + 1 Farbkarte | 24,9 % | 13 % |
+| 3 gleiche Farbkarten + 1 Trumpf | 1,4 % | 13,5 % |
+| 4 gleiche Farbkarten | 0 % | 4 % |
+| kein Trumpf | 4,6 % | 19 % |
+
+**Grenzen:** Die Spieler spielen zufällig, aber regelgerecht – echte Spieler spielen mit Plan (Trumpf ziehen, schmieren,
+Partner unterstützen). Die Zahlen stammen aus dieser Simulation, nicht aus echten Spielen. Es gilt nur das Sauspiel
+(Trumpf = Ober, Unter, Herz); Solo, Wenz und Geier haben andere Trümpfe. Ausschalten ergibt wie bisher vier zufällige Karten.
+
 ## Kartenbilder im schlechten Netz
 
 Auf der veröffentlichten Seite kommen die Kartenbilder übers Internet. Damit man nie eine „aufgedeckte“,
@@ -82,6 +108,7 @@ npm run test:e2e                     # nur Browser-Tests
 
 - **Unit-Tests** (`tests/unit`, `node:test`): Spiellogik und Kartendateien (vollständig, wohlgeformt, richtige Karte hinter dem Dateinamen, keine Skripte oder externen Verweise). Der Lauf
   schlägt fehl, wenn die Abdeckung unter 95 % Zeilen / 90 % Zweige / 95 % Funktionen fällt.
+- **Stich-Tests** (`tests/unit/tricks.test.js`): Trumpf-Reihenfolge Paar für Paar, Bedienzwang, Stichgewinner, 1000 komplette Spiele auf Regelverstöße und die Häufigkeiten der Stich-Arten.
 - **Netz-Test** (`tests/e2e/slow-network.e2e.test.js`): ein kleiner Test-Server simuliert langsame, ausgefallene und kurz unterbrochene Kartenbilder.
 - **Layout-Test** (`tests/e2e/responsive.e2e.test.js`): 11 Bildschirmgrößen (S23 in zwei Höhen, iPhone, Tablet, Querformat, Laptop, Full HD) × 9 Ansichten – kein Scrollen, nichts über dem Rand, kein abgeschnittener Text, Bedienelemente groß genug, Karten gleich groß und ohne Überlappung.
 - **End-to-End-Tests** (`tests/e2e`, Playwright/Chromium): kompletter Spielablauf in

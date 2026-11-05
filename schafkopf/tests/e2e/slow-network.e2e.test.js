@@ -21,7 +21,7 @@ test.before(async () => { browser = await chromium.launch(); });
 test.after(async () => { for (const s of servers) await s.close(); if (browser) await browser.close(); });
 
 /** Die Karten, die die App mit diesem Startwert und leerer Statistik zieht (gleiche Rechnung wie die App). */
-const handFor = () => L.drawCards(L.createDeck(), 4, L.createRng(SEED), L.cardWeights({}));
+const handFor = () => L.nextHand(L.DEFAULT_SETTINGS, L.createRng(SEED), {});
 
 async function openSlow(t, netz, settings = {}) {
   const server = await startServer(ROOT, netz);

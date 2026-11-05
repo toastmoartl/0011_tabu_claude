@@ -141,14 +141,14 @@ test.describe('Responsives Layout: alles ohne Scrollen sichtbar', { concurrency:
       try {
         await page.goto(PAGE_URL);
 
-        // 1–3: Einstellungen – Standard, Höchstzahl an Zeilen (13), und mit den längeren hochdeutschen Texten
+        // 1–3: Einstellungen – Standard, Höchstzahl an Zeilen (14), und mit den längeren hochdeutschen Texten
         await load(page, {});
         await check('Einstellungen (Standard)');
         await load(page, { revealMode: 'sequential', answerLimitEnabled: true });
-        assert.equal(await page.locator('#settings-form .field:visible').count(), 13);
-        await check('Einstellungen (alle 13 Zeilen)');
+        assert.equal(await page.locator('#settings-form .field:visible').count(), 14);
+        await check('Einstellungen (alle 14 Zeilen)');
         await load(page, { revealMode: 'sequential', answerLimitEnabled: true, language: 'hochdeutsch' });
-        await check('Einstellungen (alle 13 Zeilen, Hochdeutsch)');
+        await check('Einstellungen (alle 14 Zeilen, Hochdeutsch)');
 
         // 4: Karten aufgedeckt
         await load(page, { displaySeconds: 10 });
@@ -168,7 +168,9 @@ test.describe('Responsives Layout: alles ohne Scrollen sichtbar', { concurrency:
         await load(page, { displaySeconds: 0.5, inputMode: 'number', rounds: 1, answerLimitEnabled: true, answerLimitSeconds: 20 });
         await page.click('#start-btn');
         await page.waitForSelector('#number-form:not([hidden])');
-        await page.click('.key[data-key="9"]');
+        // bewusst falsch antworten: eine Ziffer, die nicht die Summe der Karten ist (sonst ginge es direkt zur Auswertung)
+        const sum = L.sumPoints((await page.$$eval('#hand .card', (els) => els.map((e) => e.dataset.cardId))).map(L.cardById));
+        await page.click(`.key[data-key="${sum === 9 ? 8 : 9}"]`);
         await check('Antwort: Ziffernblock');
         await page.click('#check-btn');
         await waitPhase(page, 'feedback');
