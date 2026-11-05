@@ -6,13 +6,13 @@ on:
       - 'schafkopf/**'
       - 'scripts/**'
       - 'site/**'
-      - '.github/workflows/schafkopf.yml'
+      - '.github/workflows/**'
   pull_request:
     paths:
       - 'schafkopf/**'
       - 'scripts/**'
       - 'site/**'
-      - '.github/workflows/schafkopf.yml'
+      - '.github/workflows/**'
 
 jobs:
   test:
